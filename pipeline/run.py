@@ -11,7 +11,7 @@ import statistics
 
 from . import edgar, prices
 from .http import sec_headers
-from .fundamentals import metrics
+from .fundamentals import metrics, revenue_drawdown
 from .screen import RULES, evaluate
 from .universe import load_constituents
 
@@ -110,6 +110,12 @@ def main():
         jan = evaluate(m_jan, p_start, prices.sma_on(series, SCREEN_START) if series else None)
         now = evaluate(m_now, p_now, prices.sma_on(series, last_day) if series else None)
         jan["period_end"], now["period_end"] = m_jan["period_end"], m_now["period_end"]
+        # Extra signals, shown next to the rules but not part of them.
+        for ev, m, day, asof in ((jan, m_jan, SCREEN_START, SCREEN_START), (now, m_now, last_day, asof_now)):
+            ev["rs"] = prices.rel_return(series, spy, day) if series and spy else None
+            g, g_prev = ev["rules"]["rev"]["v"], m.get("revenue_growth_prev")
+            ev["accel"] = g - g_prev if isinstance(g, float) and g_prev is not None else None
+            ev["cyc"] = revenue_drawdown(cf, asof)
 
         rows.append({
             "sym": sym, "name": s["name"], "sector": s["sector"], "cik": s["cik"],

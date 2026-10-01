@@ -95,6 +95,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .cell.ok { background: var(--ink); }
 .cell.no { background: transparent; }
 .cell.na { border-style: dotted; border-color: var(--none); }
+.tag { font: 600 0.72rem var(--num); padding: 1px 6px; border-radius: 3px; margin-left: 6px; background: var(--loss-soft); color: var(--loss); vertical-align: 1px; }
 .passmark { font: 600 0.8rem var(--num); margin-left: 8px; padding: 1px 6px; border-radius: 3px; background: var(--gain-soft); color: var(--gain); }
 
 .pill { font: 600 0.8rem var(--num); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--line); }
@@ -188,6 +189,10 @@ const money = v => {
   return a >= 1e9 ? `${s}$${(a / 1e9).toFixed(1)}B` : a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1)}M` : `${s}$${Math.round(a / 1e3)}K`;
 };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const CYCLICAL_DROP = 0.2;
+const isCyc = c => c != null && c.drop >= CYCLICAL_DROP;
+const trend = v => v == null ? "–" : `<span class="${cls(v)}">${v > 0 ? "▲" : "▼"} ${Math.abs(v * 100).toFixed(1)} pts</span>`;
+const cycTag = c => isCyc(c) ? ` <span class="tag" title="Annual revenue fell ${Math.round(c.drop * 100)}% from an earlier peak (year to ${esc(c.trough)}). Profits swing with the cycle.">Cyclical</span>` : "";
 const median = a => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return !s.length ? null : s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const byYtd = () => DATA.stocks.filter(r => r.ytd != null).sort((a, b) => b.ytd - a.ytd);
 
@@ -239,19 +244,23 @@ function hits() {
   const ranked = byYtd(), top = ranked.slice(0, WIN_GROUP), rest = ranked.slice(WIN_GROUP);
   const rate = (list, f) => list.length ? list.filter(f).length / list.length : null;
   const stats = [...RULE_KEYS.map(k => ({ t: DATA.rules[k], f: r => r.jan.rules[k].ok === true })),
-                 { t: "All six rules", f: r => r.jan.pass }].map(x => ({ t: x.t, a: rate(top, x.f), b: rate(rest, x.f) }));
-  const best = stats.slice(0, -1).reduce((m, x) => (x.a - x.b > m.a - m.b ? x : m));
+                 { t: "Signal: beat the S&P 500 over the prior 6 months", f: r => r.jan.rs > 0 },
+                 { t: "Signal: revenue growth speeding up", f: r => r.jan.accel > 0 },
+                 { t: "All six rules", f: r => r.jan.pass, rank: false },
+                 { t: `Risk flag: cyclical (annual revenue fell ${CYCLICAL_DROP * 100}%+ from a peak)`, f: r => isCyc(r.jan.cyc), rank: false }]
+    .map(x => ({ ...x, a: rate(top, x.f), b: rate(rest, x.f) }));
+  const best = stats.filter(x => x.rank !== false).reduce((m, x) => (x.a - x.b > m.a - m.b ? x : m));
   const flagged = ranked.slice(0, WIN_TABLE).filter(r => r.jan.pass).length;
   const p0 = v => v == null ? "–" : Math.round(v * 100) + "%";
   $("#hits").innerHTML = `<h2>Did the rules spot this year's winners?</h2>
-    <p>${flagged} of the ${WIN_TABLE} biggest gainers since Jan 1 passed all six rules on Jan 1. The table shows how often each rule held on Jan 1 for the ${WIN_GROUP} biggest gainers and for every other stock. The bigger the gap, the more that rule pointed at winners.</p>
+    <p>${flagged} of the ${WIN_TABLE} biggest gainers since Jan 1 passed all six rules on Jan 1. The table shows how often each rule and signal held on Jan 1 for the ${WIN_GROUP} biggest gainers and for every other stock. The bigger the gap, the more it pointed at winners. The cyclical flag is a risk, not a buy signal: these companies' profits swing with prices and often look strongest near a peak.</p>
     <table class="hit"><thead><tr><th scope="col">Rule on Jan 1</th><th class="num" scope="col">Top ${WIN_GROUP} gainers</th><th class="num" scope="col">Everyone else</th></tr></thead><tbody>
     ${stats.map(x => `<tr${x === best ? ' class="best"' : ""}><td>${esc(x.t)}${x === best ? ' <span class="fine">biggest gap</span>' : ""}</td><td class="num">${p0(x.a)}</td><td class="num">${p0(x.b)}</td></tr>`).join("")}
     </tbody></table>
     <p>One year is a small sample, and one theme can dominate it. Signals like these improve the odds across many stocks; they rarely pick a single big winner in advance. About 4% of US stocks produced all of the market's net gain over Treasury bills since 1926 (Bessembinder, 2018).</p>
     <details><summary>What else investors look at</summary><ul>
-      <li><b>Strength against the market:</b> the stock's 6 to 12 month return compared with the S&amp;P 500. Leaders tend to keep leading for a while.</li>
-      <li><b>Growth speeding up:</b> this quarter's growth rate compared with last quarter's, not just growth above a fixed bar.</li>
+      <li><b>Strength against the market</b> (the "vs S&amp;P 500" column): leaders tend to keep leading for a while.</li>
+      <li><b>Growth speeding up</b> (the "Growth trend" column): growth that is accelerating matters more than growth above a fixed bar.</li>
       <li><b>Estimate changes and earnings surprises:</b> prices tend to keep drifting in the direction of a surprise for weeks.</li>
       <li><b>Valuation:</b> price against earnings, sales or free cash flow. A great company can still be priced too high.</li>
       <li><b>Return on capital and gross margin:</b> how much profit each dollar put into the business earns.</li>
@@ -260,12 +269,16 @@ function hits() {
 }
 
 function columns() {
-  const base = [
-    { k: "sym", t: "Stock", get: r => r.sym, html: r => `<span class="sym">${esc(r.sym)}</span><span class="nm">${esc(r.name)}</span>` },
-    { k: "sector", t: "Sector", get: r => r.sector, html: r => esc(r.sector) },
-  ];
   const janView = tab === "jan" || tab === "win";
   const scr = r => janView ? r.jan : r.now;
+  const base = [
+    { k: "sym", t: "Stock", get: r => r.sym, html: r => `<span class="sym">${esc(r.sym)}</span>${cycTag(scr(r).cyc)}<span class="nm">${esc(r.name)}</span>` },
+    { k: "sector", t: "Sector", get: r => r.sector, html: r => esc(r.sector) },
+  ];
+  const rs = { k: "rs", t: "vs S&P 500, 6 mo", num: true, get: r => scr(r).rs, html: r => `<span class="${cls(scr(r).rs)}">${pct(scr(r).rs)}</span>`,
+    tip: "The stock's return over the prior 6 months minus the S&P 500's. Not one of the six rules." };
+  const accel = { k: "accel", t: "Growth trend", num: true, get: r => scr(r).accel, html: r => trend(scr(r).accel),
+    tip: "Change in trailing 12-month revenue growth versus one quarter earlier. ▲ means growth is speeding up. Not one of the six rules." };
   const rules = { k: "rules", t: janView ? "Rules on Jan 1" : "Rules today", get: r => scr(r).n_ok + (scr(r).pass ? 10 : 0), html: r => strip(scr(r)) };
   const score = { k: "score", t: "Growth score", num: true, get: r => scr(r).score, html: r => scr(r).score.toFixed(0) };
   const ytd = { k: "ytd", t: "Since Jan 1", num: true, get: r => r.ytd, html: r => `<span class="${cls(r.ytd)}">${pct(r.ytd)}</span>` };
@@ -274,9 +287,9 @@ function columns() {
     html: r => r.buzz ? `<span class="pill ${esc(r.buzz.buzz)}">${esc(r.buzz.buzz)}</span> <span class="pill ${esc(r.buzz.sentiment)}">${esc(r.buzz.sentiment)}</span>` : '<span class="fine">not checked</span>' };
   const ins = { k: "insider", t: "Insiders, 90 days", num: true, get: r => r.insider ? r.insider.buys_usd - r.insider.sells_usd : null,
     html: r => r.insider ? `<span class="${r.insider.buys_usd > 0 ? "up" : ""}">${money(r.insider.buys_usd)} bought</span><br><span class="fine">${money(r.insider.sells_usd)} sold</span>` : "–" };
-  if (janView) return [...base, rules, score, ytd, price];
-  if (tab === "now") return [...base, rules, score, buzz, ins, ytd];
-  return [...base, rules, score, ytd, price];
+  if (janView) return [...base, rules, score, rs, accel, ytd, price];
+  if (tab === "now") return [...base, rules, score, rs, accel, buzz, ins, ytd];
+  return [...base, rules, score, rs, accel, ytd, price];
 }
 
 function rows() {
@@ -302,7 +315,7 @@ function rows() {
 function render() {
   const { list, cols, key, dir } = rows();
   $("#tbl thead").innerHTML = "<tr>" + cols.map(c =>
-    `<th class="${c.num ? "num" : ""}" scope="col"><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
+    `<th class="${c.num ? "num" : ""}" scope="col"${c.tip ? ` title="${esc(c.tip)}"` : ""}><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
   $("#tbl tbody").innerHTML = list.length ? list.map(r =>
     `<tr tabindex="0" data-sym="${esc(r.sym)}">` + cols.map(c => `<td class="${c.num ? "num" : ""}">${c.html(r)}</td>`).join("") + "</tr>").join("")
     : `<tr><td class="empty" colspan="${cols.length}">${tab === "jan" || tab === "now" ? "No stock passes all six rules for this filter. Try All sectors or clear the search." : "No stock matches the search or sector."}</td></tr>`;
@@ -371,6 +384,13 @@ function detail(r) {
       <td class="num">${esc(ruleText(k, r.jan.rules[k]))}<br>${mark(r.jan.rules[k].ok)}</td>
       <td class="num">${esc(ruleText(k, r.now.rules[k]))}<br>${mark(r.now.rules[k].ok)}</td></tr>`).join("") +
     `</tbody></table><p class="fine">Latest filed period: ${esc(r.jan.period_end || "none")} on Jan 1, ${esc(r.now.period_end || "none")} today.</p>`;
+  const cycText = c => c == null ? "not enough history" : `${Math.round(c.drop * 100)}%${isCyc(c) ? ` (to ${esc(c.trough.slice(0, 4))}), cyclical` : ""}`;
+  const rsCell = v => `<span class="${cls(v)}">${pct(v)}</span>`;
+  const sigTbl = `<h4>Signals, not part of the rules</h4><table class="rtable"><thead><tr><th>Signal</th><th class="num">Jan 1</th><th class="num">Today</th></tr></thead><tbody>
+    <tr><td>Return vs the S&amp;P 500, prior 6 months</td><td class="num">${rsCell(r.jan.rs)}</td><td class="num">${rsCell(r.now.rs)}</td></tr>
+    <tr><td>Revenue growth trend vs one quarter earlier</td><td class="num">${trend(r.jan.accel)}</td><td class="num">${trend(r.now.accel)}</td></tr>
+    <tr><td>Largest annual revenue fall from a peak, past 10 years</td><td class="num">${cycText(r.jan.cyc)}</td><td class="num">${cycText(r.now.cyc)}</td></tr>
+    </tbody></table>`;
   let buzz = "";
   if (r.buzz) {
     const b = r.buzz;
@@ -386,11 +406,12 @@ function detail(r) {
   }
   const ins = r.insider ? `<h4>Insider trades, last ${r.insider.window_days} days</h4>
     <p>${money(r.insider.buys_usd)} bought on the open market (${r.insider.n_buys} trades), ${money(r.insider.sells_usd)} sold (${r.insider.n_sells} trades). From public Form 4 filings.</p>` : "";
-  return rulesTbl + buzz + ins;
+  return rulesTbl + sigTbl + buzz + ins;
 }
 
 function footer() {
   $("#foot").innerHTML = `<p>A stock passes when all six rules hold:</p><ol>${RULE_KEYS.map(k => `<li>${esc(DATA.rules[k])}</li>`).join("")}</ol>
+    <p>Extra signals are shown but do not change the rules: <b>vs S&amp;P 500</b> is the stock's return over the prior 6 months minus the index's; <b>Growth trend</b> is the change in trailing 12-month revenue growth versus one quarter earlier; <b>Cyclical</b> marks companies whose annual revenue fell ${CYCLICAL_DROP * 100}% or more from an earlier peak in the past 10 years.</p>
     <p>Fundamentals come from SEC EDGAR filings, using only what was filed by each screen date. Prices are daily closes in USD. Built ${esc(DATA.generated.replace("T", " "))} UTC. For personal research only, not investment advice.</p>`;
   $("#legend").innerHTML = `<span class="key"><span class="cell ok"></span> pass</span><span class="key"><span class="cell no"></span> fail</span><span class="key"><span class="cell na"></span> no data</span><span>Order: ${RULE_KEYS.map(k => RULE_SHORT[k]).join(", ")}</span>`;
 }

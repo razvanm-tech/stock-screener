@@ -91,6 +91,50 @@ def ttm_pair(facts, asof):
     return None
 
 
+def growth_before(facts, asof, end):
+    """TTM year-over-year growth for the period about one quarter before `end`, or None."""
+    facts = duration_facts(facts, asof)
+    ends = sorted({f["end"] for f in facts}, reverse=True)
+
+    def near(target):
+        return next((x for x in ends if abs((_d(x) - target).days) <= 10), None)
+
+    prev = near(_d(end) - dt.timedelta(days=91))
+    prev_prior = near(_d(prev) - dt.timedelta(days=365)) if prev else None
+    if not prev_prior:
+        return None
+    cur, prior = ttm_ending(facts, prev), ttm_ending(facts, prev_prior)
+    return cur / prior - 1 if cur is not None and prior and prior > 0 else None
+
+
+def revenue_drawdown(cf, asof, years=10):
+    """Largest fall in annual revenue from an earlier peak over the last `years` fiscal
+    years, as {"drop": fraction, "trough": period end}; None with under 3 years of data.
+
+    ponytail: a revenue drop after a divestiture or spin-off also counts; use segment
+    data if that ever mislabels a stock.
+    """
+    annual = {}
+    for tag in TAGS["revenue"]:  # earlier tags win for the same year
+        for f in duration_facts(cf.get(tag, []), asof):
+            if 340 <= _days(f) <= 380:
+                annual.setdefault(f["end"], f["val"])
+    cutoff = (_d(asof) - dt.timedelta(days=365 * years + 180)).isoformat()
+    series = []
+    for end in sorted(annual):
+        # 52/53-week years and different tags can give near-duplicate year ends.
+        if end >= cutoff and not (series and (_d(end) - _d(series[-1][0])).days < 300):
+            series.append((end, annual[end]))
+    if len(series) < 3:
+        return None
+    peak, drop, trough = 0, 0.0, None
+    for end, val in series:
+        peak = max(peak, val)
+        if peak > 0 and 1 - val / peak > drop:
+            drop, trough = 1 - val / peak, end
+    return {"drop": round(drop, 3), "trough": trough}
+
+
 def best_ttm(cf, key, asof):
     """Try each tag for a concept; keep the one with the most recent period."""
     best = None
@@ -118,8 +162,9 @@ def metrics(cf, asof):
     out = {"period_end": None}
     rev = best_ttm(cf, "revenue", asof)
     if rev:
-        (end, cur, prior), _tag = rev
-        out.update(period_end=end, revenue=cur, revenue_prior=prior)
+        (end, cur, prior), tag = rev
+        out.update(period_end=end, revenue=cur, revenue_prior=prior,
+                   revenue_growth_prev=growth_before(cf[tag], asof, end))
     eps = best_ttm(cf, "eps", asof)
     if eps:
         (_e, cur, prior), _tag = eps

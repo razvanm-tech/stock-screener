@@ -7,8 +7,8 @@ from unittest import mock
 
 from pipeline import edgar
 from pipeline.edgar import parse_form4
-from pipeline.fundamentals import metrics, ttm_pair
-from pipeline.prices import close_on, sma_on
+from pipeline.fundamentals import metrics, revenue_drawdown, ttm_pair
+from pipeline.prices import close_on, rel_return, sma_on
 from pipeline.screen import evaluate
 
 
@@ -51,6 +51,35 @@ class TTM(unittest.TestCase):
     def test_stale_company_ignored(self):
         old = [f("2020-01-01", "2020-12-31", 5, "2021-02-01", "10-K")]
         self.assertIsNone(ttm_pair(old, "2025-12-31"))
+
+
+class Signals(unittest.TestCase):
+    def test_growth_speeding_up(self):
+        # Discrete quarters Q3 2023 .. Q3 2025. TTM growth to Sep 2025 is 46/41 - 1;
+        # one quarter earlier (to Jun 2025) it was 44/40 - 1.
+        ends = ["2023-09-30", "2023-12-31", "2024-03-31", "2024-06-30", "2024-09-30",
+                "2024-12-31", "2025-03-31", "2025-06-30", "2025-09-30"]
+        vals = [10, 10, 10, 10, 11, 11, 11, 11, 13]
+        qs = []
+        for end, val in zip(ends, vals):
+            start = (dt.date.fromisoformat(end) - dt.timedelta(days=88)).replace(day=1).isoformat()
+            qs.append(f(start, end, val, (dt.date.fromisoformat(end) + dt.timedelta(days=30)).isoformat()))
+        m = metrics({"Revenues": qs}, "2025-12-31")
+        self.assertAlmostEqual(m["revenue"] / m["revenue_prior"] - 1, 46 / 41 - 1)
+        self.assertAlmostEqual(m["revenue_growth_prev"], 44 / 40 - 1)
+
+    def test_revenue_drawdown(self):
+        years = [("2019", 100), ("2020", 120), ("2021", 60), ("2022", 90)]
+        facts = [f(f"{y}-01-01", f"{y}-12-31", v, f"{int(y) + 1}-02-15", "10-K") for y, v in years]
+        self.assertEqual(revenue_drawdown({"Revenues": facts}, "2025-06-30"),
+                         {"drop": 0.5, "trough": "2021-12-31"})
+        self.assertIsNone(revenue_drawdown({"Revenues": facts[:2]}, "2025-06-30"))
+
+    def test_rel_return(self):
+        stock = [("2025-01-01", 100.0), ("2025-07-02", 150.0)]
+        index = [("2025-01-01", 100.0), ("2025-07-02", 110.0)]
+        self.assertAlmostEqual(rel_return(stock, index, "2025-07-02"), 0.40)
+        self.assertIsNone(rel_return(stock[1:], index, "2025-07-02"))  # no history that far back
 
 
 class Screen(unittest.TestCase):

@@ -20,6 +20,12 @@ A stock passes only if all six hold, using data public on the screen date:
 
 Passers are ranked by revenue growth plus EPS growth.
 
+Three extra signals are shown next to the rules but never change them: return versus the
+S&P 500 over the prior 6 months, the growth trend (trailing 12-month revenue growth versus one
+quarter earlier), and a cyclical flag (annual revenue fell 20% or more from an earlier peak in
+the past 10 years). Each is computed for Jan 1 and today, so the Biggest gainers tab shows
+whether it pointed at this year's winners.
+
 ## Data sources
 
 - **Fundamentals:** SEC EDGAR company facts, free with no key. Only filings dated on or before

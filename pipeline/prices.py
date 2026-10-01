@@ -126,6 +126,15 @@ def close_on(series, day):
     return series[i][1] if i >= 0 else None
 
 
+def rel_return(series, bench, day, days=182):
+    """Return of `series` minus return of `bench` over `days` ending on `day`, or None."""
+    start = (dt.date.fromisoformat(day) - dt.timedelta(days=days)).isoformat()
+    s0, s1, b0, b1 = (close_on(x, d) for x in (series, bench) for d in (start, day))
+    if not (s0 and s1 and b0 and b1):
+        return None
+    return s1 / s0 - b1 / b0
+
+
 def sma_on(series, day, window=200):
     dates = [d for d, _ in series]
     i = bisect.bisect_right(dates, day)
