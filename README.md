@@ -47,8 +47,9 @@ Passers are ranked by revenue growth plus EPS growth.
    ```
 
 3. **Add two secrets.** Go to Settings, then Secrets and variables, then Actions, and add:
-   - `SEC_USER_AGENT`: your name and email, e.g. `Razvan stock-screener razvan@example.com`.
-     The SEC requires a contact in every request.
+   - `SEC_USER_AGENT`: your name and a real email, e.g. `Jane Doe jane.doe@gmail.com`, with
+     no quotes. The SEC requires a contact in every request and blocks placeholder or no-reply
+     addresses; `www.sec.gov`, where Form 4 filings live, is stricter than `data.sec.gov`.
    - `FMP_API_KEY`: your Financial Modeling Prep key. Optional: without it, prices come
      from the keyless fallbacks.
 
