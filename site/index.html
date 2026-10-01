@@ -64,6 +64,16 @@ h1 { font: 700 2rem/1.1 var(--num); margin: 0; letter-spacing: -0.01em; }
 nav.tabs { display: flex; gap: 4px; margin: 32px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
 nav.tabs button { font: 600 1rem var(--num); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
 nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+nav.tabs .guide-tab { margin-left: auto; }
+.guide { margin-top: 16px; background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px; }
+.guide h2 { font: 600 1.3rem/1.2 var(--num); margin: 0 0 8px; }
+.guide h3 { font: 600 1.1rem/1.3 var(--num); margin: 26px 0 6px; }
+.guide p, .guide li, .guide dd { max-width: 76ch; }
+.guide ul, .guide ol { padding-left: 22px; }
+.guide li { margin: 4px 0; }
+.guide dt { font-weight: 600; margin-top: 12px; }
+.guide dd { margin: 2px 0 0; color: var(--muted); }
+.guide .cell { display: inline-block; vertical-align: -1px; }
 .tabnote { color: var(--muted); font-size: 0.9rem; margin: 12px 0 0; max-width: 80ch; }
 
 .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 16px 0 10px; }
@@ -149,10 +159,12 @@ footer ol { padding-left: 20px; }
     <button role="tab" aria-selected="false" data-tab="now">Today and 2027 buzz</button>
     <button role="tab" aria-selected="false" data-tab="all">All stocks</button>
     <button role="tab" aria-selected="false" data-tab="win">Biggest gainers</button>
+    <button role="tab" aria-selected="false" data-tab="guide" class="guide-tab">How to read this</button>
   </nav>
   <p class="tabnote" id="tabnote"></p>
   <section class="race" id="hits" hidden></section>
 
+  <div id="listview">
   <div class="controls">
     <input type="search" id="q" placeholder="Search ticker or company" aria-label="Search ticker or company">
     <select id="sector" aria-label="Sector"><option value="">All sectors</option></select>
@@ -161,6 +173,78 @@ footer ol { padding-left: 20px; }
   </div>
   <div class="legend" id="legend"></div>
   <div class="tablebox"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  </div>
+
+  <section class="guide" id="guide" hidden>
+    <h2>How to read this dashboard</h2>
+    <p>This page checks every current S&amp;P 500 stock against six fixed rules about growth, profitability, cash, debt and price trend, and rebuilds itself every weekday night. It is a research tool for building a shortlist, not a list of recommendations.</p>
+
+    <h3>The chart at the top</h3>
+    <p>It compares four results since Jan 1, 2026, using price changes in USD:</p>
+    <ul>
+      <li><b>Jan 1 passers:</b> the average return of the stocks that passed all six rules on Jan 1, each weighted equally.</li>
+      <li><b>Typical Jan 1 passer:</b> the median of those same stocks. When it sits far below the average, a few big winners are carrying the group.</li>
+      <li><b>S&amp;P 500:</b> the index, measured through the SPY fund.</li>
+      <li><b>Median member:</b> what a typical single S&amp;P 500 stock did.</li>
+    </ul>
+    <p>The fair test of the rules is the typical passer against the S&amp;P 500.</p>
+
+    <h3>The tabs</h3>
+    <dl>
+      <dt>Jan 1 screen</dt>
+      <dd>Stocks that passed all six rules using only filings and prices public on Dec 31, 2025, and how they have done since. Nothing from later in the year leaks in, so this is an honest test.</dd>
+      <dt>Today and 2027 buzz</dt>
+      <dd>Stocks passing all six rules today, ranked by growth score. The top-ranked ones also show what news and analysts expect for 2027 and recent insider trades.</dd>
+      <dt>All stocks</dt>
+      <dd>Every member with today's results. Tick "Passers only" to narrow it down.</dd>
+      <dt>Biggest gainers</dt>
+      <dd>This year's top gainers with the results they had on Jan 1, before they rose, and a table showing which rules and signals pointed at the winners.</dd>
+    </dl>
+    <p>Every list can be searched by ticker or company, filtered by sector, and sorted by clicking a column header.</p>
+
+    <h3>Reading a row</h3>
+    <dl>
+      <dt>Rules: six squares</dt>
+      <dd>One square per rule, in this order: Revenue, EPS, Margin, Cash flow, Debt, Trend. <span class="cell ok"></span> pass, <span class="cell no"></span> fail, <span class="cell na"></span> no data. "Pass" appears only when all six pass; missing data never counts as a pass. The full rules are listed at the bottom of the page.</dd>
+      <dt>Growth score</dt>
+      <dd>Revenue growth plus earnings-per-share growth over the last 12 months, in percentage points, with EPS growth capped at 200. For example, 20% revenue growth and 40% EPS growth give a score of 60. It is used to rank the passers.</dd>
+      <dt>vs S&amp;P 500, 6 mo</dt>
+      <dd>The stock's return over the prior 6 months minus the index's. Positive means it beat the market. Stocks that have been beating the market tend to keep doing so for a while; the Biggest gainers tab shows how well this pointed at this year's winners.</dd>
+      <dt>Growth trend</dt>
+      <dd>Whether revenue growth is speeding up (▲) or slowing (▼) compared with one quarter earlier, in percentage points.</dd>
+      <dt>Cyclical badge</dt>
+      <dd>Annual revenue fell 20% or more from an earlier peak at some point in the last 10 years. These companies' profits swing with prices and demand, and they often look strongest near a peak. Treat it as a caution, not a verdict: a one-off shock such as 2020, or selling off part of the business, can also trigger it.</dd>
+      <dt>Since Jan 1</dt>
+      <dd>The price change since the Dec 31, 2025 close.</dd>
+      <dt>2027 buzz</dt>
+      <dd>Two badges: how much attention the stock is getting (high, medium, low) and the tone (positive, mixed, negative). It summarises public news and analyst coverage about 2027, with sources and a date in the detail panel. It reports what others say; it is not a forecast.</dd>
+      <dt>Insiders, 90 days</dt>
+      <dd>Open-market buys and sells by executives and directors, from public SEC Form 4 filings. Selling is common and often planned months ahead, so it says little. Insiders buying with their own money is rarer and more telling.</dd>
+    </dl>
+
+    <h3>The detail panel</h3>
+    <p>Click a row, or select it and press Enter, to open the stock. You get a price chart with ranges from one week up to the full history since 2016 (hover to read a date's price), every rule and signal on Jan 1 and today with the actual numbers, the 2027 buzz with its sources, and insider trades.</p>
+
+    <h3>A sensible way to use it</h3>
+    <ol>
+      <li>Start on <b>Today and 2027 buzz</b> and note the passers that are also beating the S&amp;P 500.</li>
+      <li>Open each one. Check whether growth is speeding up, whether it carries the cyclical badge, and what risks the buzz mentions.</li>
+      <li>Read at least one source behind the buzz before forming a view.</li>
+      <li>Watch concentration. If most of your shortlist is one theme, it is really one bet.</li>
+      <li>Write down the shortlist with the date and compare it with the S&amp;P 500 later. Most picks end up close to the index; a few drive the results.</li>
+    </ol>
+
+    <h3>What it cannot tell you</h3>
+    <ul>
+      <li>Valuation is not checked: a stock can pass every rule and still be expensive.</li>
+      <li>It uses today's S&amp;P 500 members, so stocks dropped during the year are missing, which flatters the results slightly.</li>
+      <li>Returns are price only: no dividends, fees, taxes or currency effects.</li>
+      <li>Company filings arrive weeks after a quarter ends, so the fundamentals always lag a little.</li>
+      <li>Banks and insurers often lack an operating income figure, so they show "no data" on the margin rule and cannot pass.</li>
+      <li>One year of results is a small sample.</li>
+    </ul>
+    <p>Prices and rules update every weekday night, insider trades weekly, and the 2027 buzz only when someone asks for it. For personal research only; nothing here is investment advice.</p>
+  </section>
 
   <footer id="foot"></footer>
 </div>
@@ -313,6 +397,11 @@ function rows() {
 }
 
 function render() {
+  const guide = tab === "guide";
+  $("#listview").hidden = guide;
+  $("#guide").hidden = !guide;
+  $("#hits").hidden = tab !== "win";
+  if (guide) { $("#tabnote").textContent = ""; return; }
   const { list, cols, key, dir } = rows();
   $("#tbl thead").innerHTML = "<tr>" + cols.map(c =>
     `<th class="${c.num ? "num" : ""}" scope="col"${c.tip ? ` title="${esc(c.tip)}"` : ""}><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
@@ -322,7 +411,6 @@ function render() {
   $("#count").textContent = `${list.length} stock${list.length === 1 ? "" : "s"}`;
   $("#tabnote").textContent = NOTES[tab];
   $("#onlyWrap").hidden = tab !== "all";
-  $("#hits").hidden = tab !== "win";
 }
 
 /* Drawer with chart */
