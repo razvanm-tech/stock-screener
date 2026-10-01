@@ -8,7 +8,9 @@ import csv
 import datetime as dt
 import io
 import json
+import math
 import os
+import statistics
 
 from .http import pace, session
 
@@ -133,6 +135,21 @@ def rel_return(series, bench, day, days=182):
     if not (s0 and s1 and b0 and b1):
         return None
     return s1 / s0 - b1 / b0
+
+
+def drawdown(series):
+    """How far the last close sits below the highest close in `series` (0 at a new high)."""
+    return series[-1][1] / max(c for _, c in series) - 1
+
+
+def volatility(series, days=90):
+    """Annualised volatility of daily returns over the last `days` closes.
+
+    Uses a 365-day year, since crypto trades every day.
+    """
+    closes = [c for _, c in series[-(days + 1):]]
+    rets = [b / a - 1 for a, b in zip(closes, closes[1:])]
+    return statistics.stdev(rets) * math.sqrt(365) if len(rets) >= 30 else None
 
 
 def sma_on(series, day, window=200):

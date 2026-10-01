@@ -8,7 +8,7 @@ from unittest import mock
 from pipeline import edgar
 from pipeline.edgar import parse_form4
 from pipeline.fundamentals import metrics, revenue_drawdown, ttm_pair
-from pipeline.prices import close_on, rel_return, sma_on
+from pipeline.prices import close_on, drawdown, rel_return, sma_on, volatility
 from pipeline.screen import evaluate
 
 
@@ -129,6 +129,13 @@ class Prices(unittest.TestCase):
         self.assertEqual(close_on(series, "2024-12-31"), None)
         self.assertEqual(sma_on(series, "2025-01-10", window=10), 5.5)
         self.assertIsNone(sma_on(series, "2025-01-05", window=10))
+
+    def test_drawdown_and_volatility(self):
+        self.assertAlmostEqual(drawdown([("d1", 50.0), ("d2", 200.0), ("d3", 150.0)]), -0.25)
+        self.assertEqual(drawdown([("d1", 50.0), ("d2", 80.0)]), 0)
+        steady = [(f"d{i}", 100 * 1.01 ** i) for i in range(120)]   # same return every day
+        self.assertAlmostEqual(volatility(steady), 0, places=9)
+        self.assertIsNone(volatility(steady[:20]))
 
 
 class Form4(unittest.TestCase):

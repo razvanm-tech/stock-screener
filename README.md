@@ -36,6 +36,10 @@ whether it pointed at this year's winners.
   and investor discussion, and stored in `buzz.json`. Each nightly build publishes whatever
   is in that file; nothing refreshes it automatically.
 - **Insiders:** open-market buys and sells over 90 days, from public SEC Form 4 filings.
+- **Crypto:** daily closes for eight major coins (`COINS` in `pipeline/run.py`) from the keyless
+  Yahoo source. Coins have no earnings, so the Crypto tab shows price signals only: trend versus
+  the 200-day average, 6-month return versus Bitcoin and the S&P 500, distance from the
+  all-time high, and 90-day volatility. Buzz for a coin uses its pair as the key, e.g. `BTC-USD`.
 
 ## Setup
 

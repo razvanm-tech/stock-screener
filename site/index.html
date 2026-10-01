@@ -159,6 +159,7 @@ footer ol { padding-left: 20px; }
     <button role="tab" aria-selected="false" data-tab="now">Today and 2027 buzz</button>
     <button role="tab" aria-selected="false" data-tab="all">All stocks</button>
     <button role="tab" aria-selected="false" data-tab="win">Biggest gainers</button>
+    <button role="tab" aria-selected="false" data-tab="crypto">Crypto</button>
     <button role="tab" aria-selected="false" data-tab="guide" class="guide-tab">How to read this</button>
   </nav>
   <p class="tabnote" id="tabnote"></p>
@@ -199,6 +200,8 @@ footer ol { padding-left: 20px; }
       <dd>Every member with today's results, including 2027 buzz written for stocks that do not pass. Tick "Passers only" to narrow it down, or sort by the 2027 buzz column to bring every stock with buzz to the top.</dd>
       <dt>Biggest gainers</dt>
       <dd>This year's top gainers with the results they had on Jan 1, before they rose, and a table showing which rules and signals pointed at the winners.</dd>
+      <dt>Crypto</dt>
+      <dd>Major cryptocurrencies, judged on price only. See the crypto section below.</dd>
     </dl>
     <p>Every list can be searched by ticker or company, filtered by sector, and sorted by clicking a column header.</p>
 
@@ -224,6 +227,22 @@ footer ol { padding-left: 20px; }
 
     <h3>The detail panel</h3>
     <p>Click a row, or select it and press Enter, to open the stock. You get a price chart with ranges from one week up to the full history since 2016 (hover to read a date's price), every rule and signal on Jan 1 and today with the actual numbers, the 2027 buzz with its sources, and insider trades.</p>
+
+    <h3>The crypto tab</h3>
+    <p>Coins have no earnings, revenue or cash flow, so the six stock rules cannot apply. The tab shows what can be measured from prices:</p>
+    <dl>
+      <dt>vs 200-day avg</dt>
+      <dd>How far the price sits above or below its 200-day average. Above usually means an uptrend; this is the most watched crypto trend line.</dd>
+      <dt>vs Bitcoin, 6 mo</dt>
+      <dd>The coin's 6-month return minus Bitcoin's. Most smaller coins trail Bitcoin over time, so beating it means something.</dd>
+      <dt>vs S&amp;P 500, 6 mo</dt>
+      <dd>The same comparison against the stock market.</dd>
+      <dt>From all-time high</dt>
+      <dd>How far below its highest daily close since 2016 the coin trades. Crypto bear markets often fall 70% to 80%, so this shows roughly where a coin is in its cycle.</dd>
+      <dt>Volatility</dt>
+      <dd>The typical yearly swing, based on the last 90 days. The S&amp;P 500 usually runs around 15-20%; most coins run three to five times that. Size any position with this in mind.</dd>
+    </dl>
+    <p>What prices cannot show, such as fund flows, adoption, new supply and regulation, comes through the 2027 buzz, written on request.</p>
 
     <h3>A sensible way to use it</h3>
     <ol>
@@ -260,7 +279,8 @@ const NOTES = {
   jan: "Stocks that passed all six rules using only filings and prices public on Dec 31, 2025, and what they have done since.",
   now: "Stocks passing all six rules today. Buzz summarises public news and investor talk about 2027 for the top-ranked passers. It is not a recommendation.",
   all: "Every current S&P 500 member with today's rule results. Click a row for the chart and details.",
-  win: `The ${WIN_TABLE} biggest gainers since Jan 1, with the rule results they had on Jan 1, before the move.`
+  win: `The ${WIN_TABLE} biggest gainers since Jan 1, with the rule results they had on Jan 1, before the move.`,
+  crypto: "Major cryptocurrencies, judged on price alone: coins have no earnings or cash flow, so the six stock rules do not apply. Daily closes in USD, seven days a week. Hover a column header for what it means."
 };
 let DATA = null, tab = "jan", sortKey = null, sortDir = -1;
 const $ = s => document.querySelector(s);
@@ -352,7 +372,29 @@ function hits() {
     </ul></details>`;
 }
 
+const pctCell = v => `<span class="${cls(v)}">${pct(v)}</span>`;
+const usd = v => v == null ? "–" : "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: v < 1 ? 4 : 2 });
+const buzzCol = { k: "buzz", t: "2027 buzz", get: r => ({ high: 3, medium: 2, low: 1 })[r.buzz?.buzz] || 0,
+  html: r => r.buzz ? `<span class="pill ${esc(r.buzz.buzz)}">${esc(r.buzz.buzz)}</span> <span class="pill ${esc(r.buzz.sentiment)}">${esc(r.buzz.sentiment)}</span>` : '<span class="fine">not checked</span>' };
+
+function cryptoColumns() {
+  const num = (k, t, tip) => ({ k, t, tip, num: true, get: r => r[k], html: r => pctCell(r[k]) });
+  return [
+    { k: "sym", t: "Coin", get: r => r.rank, html: r => `<span class="sym">${esc(r.ticker)}</span><span class="nm">${esc(r.name)}</span>` },
+    { k: "price", t: "Price", num: true, get: r => r.price, html: r => usd(r.price) },
+    num("ytd", "Since Jan 1", "Price change since the Dec 31, 2025 close."),
+    num("trend", "vs 200-day avg", "How far the price is above (+) or below (-) its 200-day average. Above usually means an uptrend."),
+    num("rs_btc", "vs Bitcoin, 6 mo", "The coin's return over the prior 6 months minus Bitcoin's. Most smaller coins trail Bitcoin over time."),
+    num("rs", "vs S&P 500, 6 mo", "The coin's return over the prior 6 months minus the S&P 500's."),
+    num("dd", "From all-time high", "How far the price is below its highest daily close since 2016. Crypto bear markets often reach -70% to -80%."),
+    { k: "vol", t: "Volatility", num: true, get: r => r.vol, html: r => r.vol == null ? "–" : Math.round(r.vol * 100) + "%",
+      tip: "Typical yearly swing, from the last 90 days of daily moves. The S&P 500 is usually around 15-20%." },
+    buzzCol,
+  ];
+}
+
 function columns() {
+  if (tab === "crypto") return cryptoColumns();
   const janView = tab === "jan" || tab === "win";
   const scr = r => janView ? r.jan : r.now;
   const base = [
@@ -366,9 +408,8 @@ function columns() {
   const rules = { k: "rules", t: janView ? "Rules on Jan 1" : "Rules today", get: r => scr(r).n_ok + (scr(r).pass ? 10 : 0), html: r => strip(scr(r)) };
   const score = { k: "score", t: "Growth score", num: true, get: r => scr(r).score, html: r => scr(r).score.toFixed(0) };
   const ytd = { k: "ytd", t: "Since Jan 1", num: true, get: r => r.ytd, html: r => `<span class="${cls(r.ytd)}">${pct(r.ytd)}</span>` };
-  const price = { k: "price", t: "Price", num: true, get: r => r.price, html: r => r.price == null ? "–" : "$" + r.price.toFixed(2) };
-  const buzz = { k: "buzz", t: "2027 buzz", get: r => ({ high: 3, medium: 2, low: 1 })[r.buzz?.buzz] || 0,
-    html: r => r.buzz ? `<span class="pill ${esc(r.buzz.buzz)}">${esc(r.buzz.buzz)}</span> <span class="pill ${esc(r.buzz.sentiment)}">${esc(r.buzz.sentiment)}</span>` : '<span class="fine">not checked</span>' };
+  const price = { k: "price", t: "Price", num: true, get: r => r.price, html: r => usd(r.price) };
+  const buzz = buzzCol;
   const ins = { k: "insider", t: "Insiders, 90 days", num: true, get: r => r.insider ? r.insider.buys_usd - r.insider.sells_usd : null,
     html: r => r.insider ? `<span class="${r.insider.buys_usd > 0 ? "up" : ""}">${money(r.insider.buys_usd)} bought</span><br><span class="fine">${money(r.insider.sells_usd)} sold</span>` : "–" };
   if (janView) return [...base, rules, score, rs, accel, ytd, price];
@@ -378,8 +419,9 @@ function columns() {
 
 function rows() {
   const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value;
-  let list = DATA.stocks.filter(r =>
-    (!q || r.sym.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)) && (!sec || r.sector === sec));
+  const crypto = tab === "crypto";
+  let list = (crypto ? DATA.crypto || [] : DATA.stocks).filter(r =>
+    (!q || r.sym.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)) && (crypto || !sec || r.sector === sec));
   if (tab === "jan") list = list.filter(r => r.jan.pass);
   if (tab === "now") list = list.filter(r => r.now.pass);
   if (tab === "all" && $("#only").checked) list = list.filter(r => r.now.pass);
@@ -407,17 +449,19 @@ function render() {
     `<th class="${c.num ? "num" : ""}" scope="col"${c.tip ? ` title="${esc(c.tip)}"` : ""}><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
   $("#tbl tbody").innerHTML = list.length ? list.map(r =>
     `<tr tabindex="0" data-sym="${esc(r.sym)}">` + cols.map(c => `<td class="${c.num ? "num" : ""}">${c.html(r)}</td>`).join("") + "</tr>").join("")
-    : `<tr><td class="empty" colspan="${cols.length}">${tab === "jan" || tab === "now" ? "No stock passes all six rules for this filter. Try All sectors or clear the search." : "No stock matches the search or sector."}</td></tr>`;
-  $("#count").textContent = `${list.length} stock${list.length === 1 ? "" : "s"}`;
+    : `<tr><td class="empty" colspan="${cols.length}">${tab === "jan" || tab === "now" ? "No stock passes all six rules for this filter. Try All sectors or clear the search." : tab === "crypto" ? "No coin matches the search, or crypto data fills in after the next nightly build." : "No stock matches the search or sector."}</td></tr>`;
+  const noun = tab === "crypto" ? "coin" : "stock";
+  $("#count").textContent = `${list.length} ${noun}${list.length === 1 ? "" : "s"}`;
   $("#tabnote").textContent = NOTES[tab];
   $("#onlyWrap").hidden = tab !== "all";
+  $("#sector").hidden = $("#legend").hidden = tab === "crypto";
 }
 
 /* Drawer with chart */
 let chartRows = null, range = "1Y";
 const RANGES = { "1W": 7, "1M": 31, "6M": 183, "1Y": 366, "5Y": 1827, "Max": 1e9 };
 async function openStock(sym) {
-  const r = DATA.stocks.find(s => s.sym === sym); if (!r) return;
+  const r = [...DATA.stocks, ...(DATA.crypto || [])].find(s => s.sym === sym); if (!r) return;
   const d = $("#drawer");
   d.innerHTML = `<div class="dhead"><div><h3 id="dTitle">${esc(r.sym)}</h3><p>${esc(r.name)}, ${esc(r.sector)}</p></div>
     <button class="close" id="dClose">Close</button></div>
@@ -433,7 +477,7 @@ async function openStock(sym) {
     const res = await fetch(`data/prices/${encodeURIComponent(sym)}.json`);
     if (!res.ok) throw new Error(res.status);
     const j = await res.json(); chartRows = j.d.map((day, i) => [day, j.c[i]]);
-  } catch { $("#readout").textContent = "No price history for this stock yet. It fills in after the next nightly build."; }
+  } catch { $("#readout").textContent = "No price history yet. It fills in after the next nightly build."; }
   drawChart();
 }
 function closeDrawer() {
@@ -461,11 +505,37 @@ function drawChart() {
     const b = svg.getBoundingClientRect(), i = Math.round(((e.clientX - b.left) / b.width * W - pad) / (W - 2 * pad) * (pts.length - 1));
     const p = pts[Math.max(0, Math.min(pts.length - 1, i))];
     const xh = svg.querySelector("#xh"); xh.setAttribute("x1", X(pts.indexOf(p))); xh.setAttribute("x2", X(pts.indexOf(p))); xh.setAttribute("opacity", 1);
-    readout.textContent = `${p[0]}: $${p[1].toFixed(2)}`;
+    readout.textContent = `${p[0]}: ${usd(p[1])}`;
   };
   svg.onpointerleave = () => { svg.querySelector("#xh").setAttribute("opacity", 0); readout.textContent = `${pts[0][0]} to ${pts[pts.length - 1][0]}`; };
 }
+function buzzBox(b) {
+  return `<h4>2027 buzz</h4><div class="buzzbox">
+      <p><span class="pill ${esc(b.buzz)}">${esc(b.buzz)} attention</span> <span class="pill ${esc(b.sentiment)}">${esc(b.sentiment)}</span></p>
+      <p>${esc(b.outlook_2027)}</p>
+      ${b.catalysts?.length ? `<p class="fine">Catalysts people mention</p><ul>${b.catalysts.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+      ${b.risks?.length ? `<p class="fine">Risks people mention</p><ul>${b.risks.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+      ${b.sources?.length ? `<p class="fine">Sources</p><ul>${b.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul>` : ""}
+      <p class="fine">AI summary of public sources, checked ${esc(b.fetched)}. Not investment advice.</p></div>`;
+}
+const NOT_CHECKED = `<h4>2027 buzz</h4><p class="fine">Not checked yet. Buzz is added on request.</p>`;
+
+function coinDetail(r) {
+  const row = (label, v) => `<tr><td>${label}</td><td class="num">${v}</td></tr>`;
+  return `<h4>Signals</h4><table class="rtable"><tbody>
+    ${row("Since Jan 1", pctCell(r.ytd))}
+    ${row("Price vs its 200-day average", pctCell(r.trend))}
+    ${row("Return vs Bitcoin, prior 6 months", r.ticker === "BTC" ? "–" : pctCell(r.rs_btc))}
+    ${row("Return vs the S&amp;P 500, prior 6 months", pctCell(r.rs))}
+    ${row("Below its all-time high (daily closes since 2016)", pctCell(r.dd))}
+    ${row("Volatility, yearly, from the last 90 days", r.vol == null ? "–" : Math.round(r.vol * 100) + "%")}
+    </tbody></table>
+    <p class="fine">Price only. Adoption, fund flows, supply and regulation come through the 2027 buzz.</p>` +
+    (r.buzz ? buzzBox(r.buzz) : NOT_CHECKED);
+}
+
 function detail(r) {
+  if (r.kind === "crypto") return coinDetail(r);
   const mark = ok => ok === true ? '<span class="mark up">Pass</span>' : ok === false ? '<span class="mark down">Fail</span>' : '<span class="fine">No data</span>';
   const rulesTbl = `<h4>Rules, Jan 1 and today</h4><table class="rtable"><thead><tr><th>Rule</th><th class="num">Jan 1</th><th class="num">Today</th></tr></thead><tbody>` +
     RULE_KEYS.map(k => `<tr><td>${esc(DATA.rules[k])}</td>
@@ -479,19 +549,7 @@ function detail(r) {
     <tr><td>Revenue growth trend vs one quarter earlier</td><td class="num">${trend(r.jan.accel)}</td><td class="num">${trend(r.now.accel)}</td></tr>
     <tr><td>Largest annual revenue fall from a peak, past 10 years</td><td class="num">${cycText(r.jan.cyc)}</td><td class="num">${cycText(r.now.cyc)}</td></tr>
     </tbody></table>`;
-  let buzz = "";
-  if (r.buzz) {
-    const b = r.buzz;
-    buzz = `<h4>2027 buzz</h4><div class="buzzbox">
-      <p><span class="pill ${esc(b.buzz)}">${esc(b.buzz)} attention</span> <span class="pill ${esc(b.sentiment)}">${esc(b.sentiment)}</span></p>
-      <p>${esc(b.outlook_2027)}</p>
-      ${b.catalysts?.length ? `<p class="fine">Catalysts people mention</p><ul>${b.catalysts.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
-      ${b.risks?.length ? `<p class="fine">Risks people mention</p><ul>${b.risks.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
-      ${b.sources?.length ? `<p class="fine">Sources</p><ul>${b.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul>` : ""}
-      <p class="fine">AI summary of public sources, checked ${esc(b.fetched)}. Not investment advice.</p></div>`;
-  } else if (r.now.pass) {
-    buzz = `<h4>2027 buzz</h4><p class="fine">Not checked yet. Buzz is added on request.</p>`;
-  }
+  const buzz = r.buzz ? buzzBox(r.buzz) : r.now.pass ? NOT_CHECKED : "";
   const ins = r.insider ? `<h4>Insider trades, last ${r.insider.window_days} days</h4>
     <p>${money(r.insider.buys_usd)} bought on the open market (${r.insider.n_buys} trades), ${money(r.insider.sells_usd)} sold (${r.insider.n_sells} trades). From public Form 4 filings.</p>` : "";
   return rulesTbl + sigTbl + buzz + ins;

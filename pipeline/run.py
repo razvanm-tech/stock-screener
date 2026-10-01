@@ -20,6 +20,8 @@ FMP_BUDGET = int(os.environ.get("FMP_DAILY_BUDGET", "240"))    # free plan allow
 INSIDER_TOP_N = int(os.environ.get("INSIDER_TOP_N", "25"))
 INSIDER_MAX_AGE = int(os.environ.get("INSIDER_MAX_AGE_DAYS", "7"))
 BENCHMARK = "SPY"
+COINS = [("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("XRP", "XRP"), ("BNB", "BNB"),
+         ("SOL", "Solana"), ("DOGE", "Dogecoin"), ("ADA", "Cardano"), ("LINK", "Chainlink")]
 
 CACHE = "cache"
 OUT = os.path.join("site", "data")
@@ -68,6 +70,32 @@ def _insider(sym, cik, today):
     with open(path, "w") as fh:
         json.dump(data, fh)
     return data["insider"]
+
+
+def _crypto(today, spy, budget, buzz):
+    """Price-only signals for major coins; the stock rules need earnings, which coins lack."""
+    out, btc = [], None
+    for rank, (tk, name) in enumerate(COINS):
+        sym = f"{tk}-USD"
+        # No FMP key: FMP's crypto symbols differ, and Yahoo carries these pairs.
+        series = prices.update(sym, os.path.join(CACHE, "prices"), today, None, budget)
+        if tk == "BTC":
+            btc = series
+        row = {"sym": sym, "ticker": tk, "name": name, "sector": "Crypto", "kind": "crypto",
+               "rank": rank, "buzz": buzz.get(sym),
+               **dict.fromkeys(("price", "price_date", "ytd", "trend", "rs", "rs_btc", "dd", "vol"))}
+        if series:
+            _write_chart(sym, series)
+            last_day, p_now = series[-1]
+            p_start, sma = prices.close_on(series, SCREEN_START), prices.sma_on(series, last_day)
+            row.update(price=p_now, price_date=last_day,
+                       ytd=p_now / p_start - 1 if p_start else None,
+                       trend=p_now / sma - 1 if sma else None,
+                       rs=prices.rel_return(series, spy, last_day) if spy else None,
+                       rs_btc=prices.rel_return(series, btc, last_day) if btc and tk != "BTC" else None,
+                       dd=prices.drawdown(series), vol=prices.volatility(series))
+        out.append(row)
+    return out
 
 
 def main():
@@ -144,6 +172,7 @@ def main():
         "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"),
         "screen_start": SCREEN_START, "today": asof_now, "rules": RULES,
         "summary": summary, "stocks": sorted(rows, key=lambda r: r["sym"]),
+        "crypto": _crypto(today, spy, budget, buzz),
     }
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "screen.json"), "w") as fh:
