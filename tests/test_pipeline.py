@@ -163,23 +163,40 @@ class Form4(unittest.TestCase):
                 edgar.insider_summary(1, dt.date(2026, 10, 1))
 
 
-class BuzzFile(unittest.TestCase):
-    """buzz.json is edited by hand; check it matches what the page expects."""
-    def test_entries(self):
-        path = os.path.join(os.path.dirname(__file__), "..", "buzz.json")
-        with open(path, encoding="utf-8") as fh:
-            data = json.load(fh)
-        for sym, b in data.items():
+def _load_root(name):
+    with open(os.path.join(os.path.dirname(__file__), "..", name), encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+class HandWrittenFiles(unittest.TestCase):
+    """buzz.json and upcoming.json are edited by hand; check they match what the page expects."""
+    def check_buzz(self, b):
+        self.assertIn(b["buzz"], ("high", "medium", "low"))
+        self.assertIn(b["sentiment"], ("positive", "mixed", "negative"))
+        self.assertTrue(b["outlook_2027"].strip())
+        self.assertLessEqual(len(b["catalysts"]), 3)
+        self.assertLessEqual(len(b["risks"]), 2)
+        dt.date.fromisoformat(b["fetched"])
+        for s in b["sources"]:   # rendered as links on the page
+            self.assertTrue(s["url"].startswith("https://"), s["url"])
+            self.assertTrue(s["title"])
+
+    def test_buzz(self):
+        for sym, b in _load_root("buzz.json").items():
             with self.subTest(sym):
-                self.assertIn(b["buzz"], ("high", "medium", "low"))
-                self.assertIn(b["sentiment"], ("positive", "mixed", "negative"))
-                self.assertTrue(b["outlook_2027"].strip())
-                self.assertLessEqual(len(b["catalysts"]), 3)
-                self.assertLessEqual(len(b["risks"]), 2)
-                dt.date.fromisoformat(b["fetched"])
-                for s in b["sources"]:   # rendered as links on the page
-                    self.assertTrue(s["url"].startswith("https://"), s["url"])
-                    self.assertTrue(s["title"])
+                self.check_buzz(b)
+
+    def test_upcoming(self):
+        items = _load_root("upcoming.json")
+        self.assertEqual(len({u["id"] for u in items}), len(items), "ids must be unique")
+        for u in items:
+            with self.subTest(u.get("id")):
+                self.check_buzz(u)
+                for k in ("name", "ticker", "category", "expected"):
+                    self.assertTrue(u[k].strip(), k)
+                # Must match STAGES in site/index.html.
+                self.assertIn(u["status"], ("date set", "window set", "confirmed, no date",
+                                            "exploring", "no plans yet"))
 
 
 if __name__ == "__main__":

@@ -160,6 +160,7 @@ footer ol { padding-left: 20px; }
     <button role="tab" aria-selected="false" data-tab="all">All stocks</button>
     <button role="tab" aria-selected="false" data-tab="win">Biggest gainers</button>
     <button role="tab" aria-selected="false" data-tab="crypto">Crypto</button>
+    <button role="tab" aria-selected="false" data-tab="upcoming">Upcoming coins</button>
     <button role="tab" aria-selected="false" data-tab="guide" class="guide-tab">How to read this</button>
   </nav>
   <p class="tabnote" id="tabnote"></p>
@@ -202,6 +203,8 @@ footer ol { padding-left: 20px; }
       <dd>This year's top gainers with the results they had on Jan 1, before they rose, and a table showing which rules and signals pointed at the winners.</dd>
       <dt>Crypto</dt>
       <dd>Major cryptocurrencies, judged on price only. See the crypto section below.</dd>
+      <dt>Upcoming coins</dt>
+      <dd>Tokens expected to launch, or widely rumored to, with how firm each launch is. Research only; no prices exist yet.</dd>
     </dl>
     <p>Every list can be searched by ticker or company, filtered by sector, and sorted by clicking a column header.</p>
 
@@ -243,6 +246,7 @@ footer ol { padding-left: 20px; }
       <dd>The typical yearly swing, based on the last 90 days. The S&amp;P 500 usually runs around 15-20%; most coins run three to five times that. Size any position with this in mind.</dd>
     </dl>
     <p>What prices cannot show, such as fund flows, adoption, new supply and regulation, comes through the 2027 buzz, written on request.</p>
+    <p>The <b>Upcoming coins</b> tab lists tokens that have not launched yet. Its Status column runs from firmest to least firm: date set, window set (a quarter, for example), confirmed with no date, exploring, and no plans yet. Launches slip often, so treat anything below "window set" as a maybe. Many new tokens fall after launch as airdrop recipients and early investors sell, and scammers copy every big name.</p>
 
     <h3>A sensible way to use it</h3>
     <ol>
@@ -280,7 +284,8 @@ const NOTES = {
   now: "Stocks passing all six rules today. Buzz summarises public news and investor talk about 2027 for the top-ranked passers. It is not a recommendation.",
   all: "Every current S&P 500 member with today's rule results. Click a row for the chart and details.",
   win: `The ${WIN_TABLE} biggest gainers since Jan 1, with the rule results they had on Jan 1, before the move.`,
-  crypto: "Major cryptocurrencies, judged on price alone: coins have no earnings or cash flow, so the six stock rules do not apply. Daily closes in USD, seven days a week. Hover a column header for what it means."
+  crypto: "Major cryptocurrencies, judged on price alone: coins have no earnings or cash flow, so the six stock rules do not apply. Daily closes in USD, seven days a week. Hover a column header for what it means.",
+  upcoming: "Tokens expected to launch, or widely rumored to, with how firm each launch is. They have no price yet, so this is research only, written on request. Launch dates slip often, and fake tokens and airdrop scams appear around every big launch: use links only from a project's official site."
 };
 let DATA = null, tab = "jan", sortKey = null, sortDir = -1;
 const $ = s => document.querySelector(s);
@@ -393,8 +398,25 @@ function cryptoColumns() {
   ];
 }
 
+// From firmest to least firm; must match the statuses checked in tests/test_pipeline.py.
+const STAGES = ["date set", "window set", "confirmed, no date", "exploring", "no plans yet"];
+function upcomingColumns() {
+  return [
+    { k: "sym", t: "Project", get: r => r.name, html: r => `<span class="sym">${esc(r.name)}</span><span class="nm">Expected ticker: ${esc(r.ticker)}</span>` },
+    { k: "category", t: "What it is", get: r => r.category, html: r => esc(r.category) },
+    { k: "expected", t: "Expected", get: r => r.expected, html: r => esc(r.expected) },
+    { k: "status", t: "Status", get: r => STAGES.indexOf(r.status), html: r => `<span class="pill">${esc(r.status)}</span>`,
+      tip: "From firmest to least firm: date set, window set, confirmed with no date, exploring, no plans yet." },
+    // Upcoming entries are flat: r.buzz is the attention level itself, not a nested buzz object.
+    { k: "buzz", t: "Buzz", get: r => ({ high: 3, medium: 2, low: 1 })[r.buzz] || 0,
+      html: r => `<span class="pill ${esc(r.buzz)}">${esc(r.buzz)}</span> <span class="pill ${esc(r.sentiment)}">${esc(r.sentiment)}</span>`,
+      tip: "How much attention the launch gets, and the tone of coverage." },
+  ];
+}
+
 function columns() {
   if (tab === "crypto") return cryptoColumns();
+  if (tab === "upcoming") return upcomingColumns();
   const janView = tab === "jan" || tab === "win";
   const scr = r => janView ? r.jan : r.now;
   const base = [
@@ -419,17 +441,17 @@ function columns() {
 
 function rows() {
   const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value;
-  const crypto = tab === "crypto";
-  let list = (crypto ? DATA.crypto || [] : DATA.stocks).filter(r =>
-    (!q || r.sym.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)) && (crypto || !sec || r.sector === sec));
+  const other = tab === "crypto" || tab === "upcoming";  // DATA.crypto / DATA.upcoming: lists without sectors
+  let list = (other ? DATA[tab] || [] : DATA.stocks).filter(r =>
+    (!q || r.sym.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)) && (other || !sec || r.sector === sec));
   if (tab === "jan") list = list.filter(r => r.jan.pass);
   if (tab === "now") list = list.filter(r => r.now.pass);
   if (tab === "all" && $("#only").checked) list = list.filter(r => r.now.pass);
   if (tab === "win") { const top = new Set(byYtd().slice(0, WIN_TABLE)); list = list.filter(r => top.has(r)); }
   const cols = columns();
-  const key = sortKey && cols.find(c => c.k === sortKey) ? sortKey : (tab === "jan" || tab === "win" ? "ytd" : tab === "now" ? "score" : "sym");
+  const key = sortKey && cols.find(c => c.k === sortKey) ? sortKey : (tab === "jan" || tab === "win" ? "ytd" : tab === "now" ? "score" : tab === "upcoming" ? "status" : "sym");
   const col = cols.find(c => c.k === key);
-  const dir = sortKey ? sortDir : (key === "sym" ? 1 : -1);
+  const dir = sortKey ? sortDir : (key === "sym" || key === "status" ? 1 : -1);
   list.sort((a, b) => {
     const x = col.get(a), y = col.get(b);
     if (x == null) return 1; if (y == null) return -1;
@@ -449,30 +471,32 @@ function render() {
     `<th class="${c.num ? "num" : ""}" scope="col"${c.tip ? ` title="${esc(c.tip)}"` : ""}><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
   $("#tbl tbody").innerHTML = list.length ? list.map(r =>
     `<tr tabindex="0" data-sym="${esc(r.sym)}">` + cols.map(c => `<td class="${c.num ? "num" : ""}">${c.html(r)}</td>`).join("") + "</tr>").join("")
-    : `<tr><td class="empty" colspan="${cols.length}">${tab === "jan" || tab === "now" ? "No stock passes all six rules for this filter. Try All sectors or clear the search." : tab === "crypto" ? "No coin matches the search, or crypto data fills in after the next nightly build." : "No stock matches the search or sector."}</td></tr>`;
-  const noun = tab === "crypto" ? "coin" : "stock";
+    : `<tr><td class="empty" colspan="${cols.length}">${tab === "jan" || tab === "now" ? "No stock passes all six rules for this filter. Try All sectors or clear the search." : tab === "crypto" ? "No coin matches the search, or crypto data fills in after the next nightly build." : tab === "upcoming" ? "No project matches the search, or the list fills in after the next nightly build." : "No stock matches the search or sector."}</td></tr>`;
+  const noun = { crypto: "coin", upcoming: "project" }[tab] || "stock";
   $("#count").textContent = `${list.length} ${noun}${list.length === 1 ? "" : "s"}`;
   $("#tabnote").textContent = NOTES[tab];
   $("#onlyWrap").hidden = tab !== "all";
-  $("#sector").hidden = $("#legend").hidden = tab === "crypto";
+  $("#sector").hidden = $("#legend").hidden = tab === "crypto" || tab === "upcoming";
 }
 
 /* Drawer with chart */
 let chartRows = null, range = "1Y";
 const RANGES = { "1W": 7, "1M": 31, "6M": 183, "1Y": 366, "5Y": 1827, "Max": 1e9 };
 async function openStock(sym) {
-  const r = [...DATA.stocks, ...(DATA.crypto || [])].find(s => s.sym === sym); if (!r) return;
+  const r = [...DATA.stocks, ...(DATA.crypto || []), ...(DATA.upcoming || [])].find(s => s.sym === sym); if (!r) return;
+  const chart = r.kind !== "upcoming";  // unlaunched tokens have no prices
   const d = $("#drawer");
-  d.innerHTML = `<div class="dhead"><div><h3 id="dTitle">${esc(r.sym)}</h3><p>${esc(r.name)}, ${esc(r.sector)}</p></div>
+  d.innerHTML = `<div class="dhead"><div><h3 id="dTitle">${esc(chart ? r.sym : r.name)}</h3><p>${chart ? `${esc(r.name)}, ${esc(r.sector)}` : `${esc(r.category)}, expected ticker ${esc(r.ticker)}`}</p></div>
     <button class="close" id="dClose">Close</button></div>
-    <div class="ranges" role="group" aria-label="Chart range">${Object.keys(RANGES).map(k =>
+    ${chart ? `<div class="ranges" role="group" aria-label="Chart range">${Object.keys(RANGES).map(k =>
       `<button data-r="${k}" aria-pressed="${k === range}">${k}</button>`).join("")}<span class="chg" id="chg"></span></div>
     <svg class="chart" id="chart" role="img" aria-label="Price chart for ${esc(r.sym)}"></svg>
-    <div class="readout" id="readout"></div>
+    <div class="readout" id="readout"></div>` : ""}
     ${detail(r)}`;
   d.classList.add("open"); d.setAttribute("aria-hidden", "false"); $("#scrim").classList.add("open");
   $("#dClose").focus();
   chartRows = null;
+  if (!chart) return;
   try {
     const res = await fetch(`data/prices/${encodeURIComponent(sym)}.json`);
     if (!res.ok) throw new Error(res.status);
@@ -534,8 +558,21 @@ function coinDetail(r) {
     (r.buzz ? buzzBox(r.buzz) : NOT_CHECKED);
 }
 
+function upcomingDetail(r) {
+  const row = (label, v) => `<tr><td>${label}</td><td>${esc(v)}</td></tr>`;
+  return `<h4>Launch status</h4><table class="rtable"><tbody>
+    ${row("Expected ticker", r.ticker)}${row("Expected", r.expected)}${row("Status", r.status)}${row("What it is", r.category)}
+    </tbody></table>` + buzzBox(r) +
+    `<h4>Before you touch any token launch</h4><ul class="fine">
+      <li>Use links only from the project's official website or account. Fake tokens and fake airdrop sites appear around every big launch.</li>
+      <li>Never share your wallet's recovery phrase, and be careful what you let your wallet sign.</li>
+      <li>Check how much of the supply unlocks at launch and who holds the rest. Many new tokens fall after launch as airdrop recipients and early investors sell.</li>
+    </ul>`;
+}
+
 function detail(r) {
   if (r.kind === "crypto") return coinDetail(r);
+  if (r.kind === "upcoming") return upcomingDetail(r);
   const mark = ok => ok === true ? '<span class="mark up">Pass</span>' : ok === false ? '<span class="mark down">Fail</span>' : '<span class="fine">No data</span>';
   const rulesTbl = `<h4>Rules, Jan 1 and today</h4><table class="rtable"><thead><tr><th>Rule</th><th class="num">Jan 1</th><th class="num">Today</th></tr></thead><tbody>` +
     RULE_KEYS.map(k => `<tr><td>${esc(DATA.rules[k])}</td>
@@ -585,7 +622,7 @@ document.querySelector("nav.tabs").addEventListener("click", e => {
 ["#q", "#sector", "#only"].forEach(s => $(s).addEventListener("input", render));
 $("#tbl thead").addEventListener("click", e => {
   const b = e.target.closest("button[data-k]"); if (!b) return;
-  sortDir = sortKey === b.dataset.k ? -sortDir : (b.dataset.k === "sym" || b.dataset.k === "sector" ? 1 : -1);
+  sortDir = sortKey === b.dataset.k ? -sortDir : (["sym", "sector", "status"].includes(b.dataset.k) ? 1 : -1);
   sortKey = b.dataset.k; render();
 });
 $("#tbl tbody").addEventListener("click", e => { const tr = e.target.closest("tr[data-sym]"); if (tr) openStock(tr.dataset.sym); });

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "variational", "name": "Variational", "ticker": "VAR",
+    "category": "Derivatives exchange", "expected": "Q4 2026", "status": "window set",
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Variational set a Q4 2026 launch with 32% of supply airdropped to points holders, fully unlocked at launch; no exact date yet.",
+    "catalysts": ["Exact launch date announcement", "Exchange listings at launch"],
+    "risks": ["Fully unlocked airdrop can bring heavy early selling", "Half of supply held by team and investors"],
+    "sources": [
+      {"title": "Variational plans VAR token launch with 32% airdrop in Q4 2026 (Crypto Briefing)", "url": "https://cryptobriefing.com/variational-var-token-launch-airdrop/"},
+      {"title": "Variational (VAR) tokenomics: allocation and vesting (Bitrue)", "url": "https://www.bitrue.com/blog/variational-var-tokenomics"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  {
+    "id": "polymarket", "name": "Polymarket", "ticker": "POLY",
+    "category": "Prediction market", "expected": "After its U.S. relaunch", "status": "confirmed, no date",
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Executives confirmed a POLY token and airdrop after the U.S. relaunch, and a trademark was filed; no date has been announced.",
+    "catalysts": ["Completion of the U.S. relaunch", "Official token and airdrop details"],
+    "risks": ["Timing keeps slipping behind U.S. priorities", "Fake POLY tokens and airdrop scams"],
+    "sources": [
+      {"title": "Polymarket CMO confirms POLY token and airdrop plans (Blockworks)", "url": "https://blockworks.com/news/polymarket-cmo-confirms-poly-token"},
+      {"title": "Polymarket confirms token launch after $2B NYSE-parent investment (Yellow)", "url": "https://yellow.com/news/polymarket-confirms-token-launch-after-dollar2-billion-nyse-parent-investment"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  {
+    "id": "base", "name": "Base (Coinbase's network)", "ticker": "TBA",
+    "category": "Ethereum layer-2 network", "expected": "No timeline", "status": "exploring",
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Base and Coinbase said they are exploring a network token with no definitive plans; no release schedule has been announced since.",
+    "catalysts": ["An official announcement from Base or Coinbase", "US rules allowing a compliant launch"],
+    "risks": ["Could be years away, or never happen", "Scam tokens using the Base name"],
+    "sources": [
+      {"title": "Base blockchain explores issuing native token, says creator Jesse Pollak (CoinDesk)", "url": "https://www.coindesk.com/business/2025/09/15/base-explores-issuing-native-token-says-creator-jesse-pollak"},
+      {"title": "Base 'beginning to explore' native token (The Block)", "url": "https://www.theblock.co/post/370668/coinbase-incubated-base-network-beginning-to-explore-native-token-creator-jesse-pollak-says"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  {
+    "id": "metamask", "name": "MetaMask", "ticker": "MASK",
+    "category": "Crypto wallet", "expected": "No timeline", "status": "no plans yet",
+    "buzz": "high", "sentiment": "mixed",
+    "outlook_2027": "On Sept. 30, Consensys' CEO said there are no immediate plans for a MASK token, though several paths are being evaluated.",
+    "catalysts": ["Any official timeline from MetaMask", "MetaMask's separation from Consensys"],
+    "risks": ["May not launch for a long time, if ever", "Fake MASK airdrops target wallet users"],
+    "sources": [
+      {"title": "Consensys CEO evaluating multiple paths for MetaMask native token (KuCoin News)", "url": "https://www.kucoin.com/news/flash/consensys-ceo-evaluating-multiple-paths-for-metamask-native-token"},
+      {"title": "MetaMask breaks away from Consensys, but IPO and token questions remain (BeInCrypto)", "url": "https://beincrypto.com/metamask-consensys-split-ipo-token/"}
+    ],
+    "fetched": "2026-10-01"
+  }
+]

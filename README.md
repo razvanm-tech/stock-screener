@@ -40,6 +40,9 @@ whether it pointed at this year's winners.
   Yahoo source. Coins have no earnings, so the Crypto tab shows price signals only: trend versus
   the 200-day average, 6-month return versus Bitcoin and the S&P 500, distance from the
   all-time high, and 90-day volatility. Buzz for a coin uses its pair as the key, e.g. `BTC-USD`.
+- **Upcoming coins:** `upcoming.json`, written on request like the buzz: tokens expected to
+  launch (or widely rumored to), with a status from "date set" down to "no plans yet". Unlaunched
+  tokens have no prices, so this tab is research only. A test checks the file's format.
 
 ## Setup
 

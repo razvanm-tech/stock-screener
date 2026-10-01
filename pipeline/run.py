@@ -26,6 +26,7 @@ COINS = [("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("XRP", "XRP"), ("BNB", "BNB")
 CACHE = "cache"
 OUT = os.path.join("site", "data")
 BUZZ_FILE = "buzz.json"
+UPCOMING_FILE = "upcoming.json"   # unlaunched tokens, written by hand on request
 
 
 def _clean(x):
@@ -45,10 +46,10 @@ def _write_chart(sym, series):
                   fh, separators=(",", ":"))
 
 
-def _load_buzz():
-    if not os.path.exists(BUZZ_FILE):
-        return {}
-    with open(BUZZ_FILE, encoding="utf-8") as fh:
+def _load(path, empty):
+    if not os.path.exists(path):
+        return empty
+    with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -105,7 +106,7 @@ def main():
     budget = prices.Budget(FMP_BUDGET)
     fmp_key = os.environ.get("FMP_API_KEY", "").strip()
 
-    buzz = _load_buzz()
+    buzz = _load(BUZZ_FILE, {})
     universe = load_constituents()
     print(f"{len(universe)} constituents; screen start {SCREEN_START}; today {asof_now}")
 
@@ -173,6 +174,7 @@ def main():
         "screen_start": SCREEN_START, "today": asof_now, "rules": RULES,
         "summary": summary, "stocks": sorted(rows, key=lambda r: r["sym"]),
         "crypto": _crypto(today, spy, budget, buzz),
+        "upcoming": [dict(u, sym=u["id"], kind="upcoming") for u in _load(UPCOMING_FILE, [])],
     }
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "screen.json"), "w") as fh:

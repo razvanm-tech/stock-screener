@@ -329,6 +329,91 @@
     ],
     "fetched": "2026-10-01"
   },
+  "BTC-USD": {
+    "buzz": "high", "sentiment": "mixed",
+    "outlook_2027": "Forecasts split on whether ETF outflows reverse: Bernstein sees $150k by mid-2027, while some traders expect no new high before 2027.",
+    "catalysts": ["Spot ETF flows turning back to inflows", "Fed rate cuts improving liquidity"],
+    "risks": ["Weeks of ETF outflows near $6B", "Slower Fed cuts keep pressure on prices"],
+    "sources": [
+      {"title": "As crypto newcomers capitulate, will BTC become less risky? (Capital.com)", "url": "https://capital.com/as-crypto-newbies-capitulate-will-btc-become-less-risky"},
+      {"title": "Bitcoin inflows projected to reach $420B in 2026: Bitwise (Cointelegraph)", "url": "https://cointelegraph.com/news/bitcoin-inflows-projected-to-reach-420b-in-2026-bitwise"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "ETH-USD": {
+    "buzz": "high", "sentiment": "mixed",
+    "outlook_2027": "Analyst targets are unusually far apart; bulls cite the Glamsterdam upgrade, staking demand and ETFs that can now hold staked ETH.",
+    "catalysts": ["Glamsterdam upgrade cutting fees, raising capacity", "About 30% of ETH supply staked", "ETFs allowed to earn staking yield"],
+    "risks": ["Forecasts revised by 60%+ within months", "ETF flows swing between in and out"],
+    "sources": [
+      {"title": "What will Ethereum be worth at the end of 2026? (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/crypto/articles/ethereum-worth-end-2026-234606598.html"},
+      {"title": "3 reasons Ethereum could double by 2027, and 1 reason it might not (AOL)", "url": "https://www.aol.com/articles/3-reasons-ethereum-could-double-095000014.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "XRP-USD": {
+    "buzz": "high", "sentiment": "mixed",
+    "outlook_2027": "Spot XRP ETFs drew steady inflows and Ripple keeps expanding cross-border payments, but stablecoins compete for the same business.",
+    "catalysts": ["Spot XRP ETF inflows", "Ripple's cross-border payments push", "Improving US regulatory clarity"],
+    "risks": ["Stablecoins compete for cross-border payments", "Unpredictable regulatory timelines"],
+    "sources": [
+      {"title": "Ripple XRP price prediction (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/crypto/articles/ripple-xrp-price-prediction-xrp-084119250.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "BNB-USD": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Coverage is mostly model-based price forecasts; demand depends on trading on Binance and use of the BNB Chain network.",
+    "catalysts": ["BNB Chain network activity", "Trading activity on Binance"],
+    "risks": ["Tied to one company, Binance, and its regulators", "Forecasts are models, not analyst research"],
+    "sources": [
+      {"title": "Binance Coin (BNB) price prediction (Benzinga)", "url": "https://www.benzinga.com/money/binance-coin-price-prediction-bnb"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "SOL-USD": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "The Alpenglow and Firedancer upgrades made Solana much faster; spot ETFs and payment projects like Western Union's stablecoin add demand.",
+    "catalysts": ["Alpenglow faster finality and Firedancer client", "Spot SOL ETFs", "Western Union stablecoin on Solana"],
+    "risks": ["Competition from other fast blockchains", "History of network outages"],
+    "sources": [
+      {"title": "What will one Solana be worth in 3 years? (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/crypto/articles/one-solana-worth-3-years-204016781.html"},
+      {"title": "Is Solana a good crypto to buy in 2026? (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/crypto/articles/solana-good-crypto-buy-2026-141849640.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "DOGE-USD": {
+    "buzz": "medium", "sentiment": "mixed",
+    "outlook_2027": "Spot Dogecoin ETFs have drawn little money; the price still depends mostly on social media attention and Bitcoin's direction.",
+    "catalysts": ["A broad crypto rally led by Bitcoin", "Occasional Elon Musk support"],
+    "risks": ["No supply cap and little development", "ETFs recording near-zero flows"],
+    "sources": [
+      {"title": "Is Dogecoin price heading for a new low? (Yahoo Finance)", "url": "https://finance.yahoo.com/news/dogecoin-price-heading-low-early-143926813.html"},
+      {"title": "Dogecoin price prediction (FXEmpire)", "url": "https://www.fxempire.com/forecasts/article/dogecoin-price-prediction-doge-could-drop-by-another-19-if-this-happens-1613202"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "ADA-USD": {
+    "buzz": "low", "sentiment": "mixed",
+    "outlook_2027": "Analysts say Cardano must show real adoption to justify its value as Ethereum and Solana take most of the activity.",
+    "catalysts": ["Scaling upgrades on the roadmap", "Growth in apps built on Cardano"],
+    "risks": ["Losing ground to Ethereum and Solana", "Still over 90% below its peak"],
+    "sources": [
+      {"title": "Cardano (ADA) price prediction (Benzinga)", "url": "https://benzinga.com/money/cardano-ada-price-prediction"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "LINK-USD": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Bulls see Chainlink as plumbing for tokenized real-world assets, and Standard Chartered expects higher prices in 2027.",
+    "catalysts": ["Tokenization of real-world assets", "CCIP cross-chain standard", "Bank partnerships such as SWIFT"],
+    "risks": ["Depends on institutions adopting tokenization", "Debate over how much value the token captures"],
+    "sources": [
+      {"title": "Standard Chartered says Chainlink could be the rails for a $4T tokenization boom (Yellow)", "url": "https://yellow.com/news/standard-chartered-chainlink-tokenization"},
+      {"title": "Chainlink (LINK) price prediction (Benzinga)", "url": "https://www.benzinga.com/money/chainlink-price-prediction-link"}
+    ],
+    "fetched": "2026-10-01"
+  },
   "LRCX": {
     "buzz": "medium", "sentiment": "positive",
     "outlook_2027": "Analysts expect two strong years of chip equipment spending, with 2027 forecasts raised on AI and memory demand.",
