@@ -7,6 +7,7 @@ import datetime as dt
 import gzip
 import json
 import os
+import re
 import xml.etree.ElementTree as ET
 
 from .http import pace, sec_headers, session
@@ -98,6 +99,9 @@ def _form4_xml(cik, acc, doc):
     pace("sec", 0.15)
     r = session().get(ARCHIVE_URL.format(cik=cik, acc=acc.replace("-", ""), doc=doc),
                       headers=sec_headers(), timeout=30)
+    if r.status_code == 403:  # SEC names the reason for a block in the page title
+        title = re.search(r"<title>(.*?)</title>", r.text, re.S | re.I)
+        raise RuntimeError(f"SEC 403: {title.group(1).strip() if title else r.text[:120]}")
     r.raise_for_status()
     return r.text
 
@@ -135,15 +139,14 @@ def insider_summary(cik, today, window_days=90, max_filings=40):
         if seen >= max_filings:
             break
         seen += 1
-        try:
-            for code, shares, price in parse_form4(_form4_xml(cik, acc, doc)):
-                if code == "P":
-                    buys += shares * price
-                    n_buys += 1
-                elif code == "S":
-                    sells += shares * price
-                    n_sells += 1
-        except Exception as exc:
-            print(f"  form4 {acc}: {exc}")
+        # No per-filing catch: a skipped filing would understate trades, so any
+        # failure fails the whole summary and the caller keeps its older data.
+        for code, shares, price in parse_form4(_form4_xml(cik, acc, doc)):
+            if code == "P":
+                buys += shares * price
+                n_buys += 1
+            elif code == "S":
+                sells += shares * price
+                n_sells += 1
     return {"window_days": window_days, "buys_usd": round(buys), "sells_usd": round(sells),
             "n_buys": n_buys, "n_sells": n_sells, "filings_read": seen}

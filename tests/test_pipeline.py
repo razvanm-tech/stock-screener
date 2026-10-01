@@ -3,7 +3,9 @@ import datetime as dt
 import json
 import os
 import unittest
+from unittest import mock
 
+from pipeline import edgar
 from pipeline.edgar import parse_form4
 from pipeline.fundamentals import metrics, ttm_pair
 from pipeline.prices import close_on, sma_on
@@ -112,6 +114,17 @@ class Form4(unittest.TestCase):
             <transactionPricePerShare><value>60</value></transactionPricePerShare></transactionAmounts>
           </nonDerivativeTransaction></nonDerivativeTable></ownershipDocument>"""
         self.assertEqual(parse_form4(xml), [("P", 100.0, 50.5), ("S", 10.0, 60.0)])
+
+    def test_failed_filing_is_an_error_not_zero_trades(self):
+        recent = {"form": ["4"], "filingDate": ["2026-09-01"],
+                  "accessionNumber": ["0000000001-26-000001"], "primaryDocument": ["x.xml"]}
+        resp = mock.Mock(**{"json.return_value": {"filings": {"recent": recent}}})
+        with mock.patch.object(edgar, "session") as s, mock.patch.object(edgar, "pace"), \
+                mock.patch.object(edgar, "sec_headers", return_value={}), \
+                mock.patch.object(edgar, "_form4_xml", side_effect=RuntimeError("SEC 403")):
+            s.return_value.get.return_value = resp
+            with self.assertRaises(RuntimeError):
+                edgar.insider_summary(1, dt.date(2026, 10, 1))
 
 
 class BuzzFile(unittest.TestCase):

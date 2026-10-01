@@ -52,7 +52,7 @@ def _load_buzz():
 
 def _insider(sym, cik, today):
     """Open-market insider trades, refreshed every INSIDER_MAX_AGE days."""
-    path = os.path.join(CACHE, "insider", f"{sym}.json")
+    path = os.path.join(CACHE, "insider2", f"{sym}.json")  # "insider" cached false zeros
     cached = None
     if os.path.exists(path):
         with open(path) as fh:
