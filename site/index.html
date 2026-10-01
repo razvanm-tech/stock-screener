@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>S&amp;P 500 screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f3f5f7; --sheet: #ffffff; --ink: #16212e; --muted: #5b6b7c;
+  --line: #d5dce3; --accent: #2643c9; --gain: #1e7a4c; --loss: #b42318;
+  --gain-soft: #e3f1e9; --loss-soft: #f9e5e3; --none: #9aa7b4;
+  --font: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --num: "Barlow Semi Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  color-scheme: light dark;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121a23; --sheet: #18222d; --ink: #e6ecf2; --muted: #96a5b4;
+    --line: #2b3846; --accent: #8ea2ff; --gain: #5fca91; --loss: #ff8a7d;
+    --gain-soft: #17352a; --loss-soft: #3d1f1d; --none: #5d6b79;
+  }
+}
+*, *::before, *::after { box-sizing: inherit; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 var(--font); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 64px; }
+
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font: 700 2rem/1.1 var(--num); margin: 0; letter-spacing: -0.01em; }
+.stamp { color: var(--muted); font-size: 0.9rem; }
+
+/* The race: Jan 1 basket vs the index vs the median stock */
+.race { margin: 28px 0 8px; background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px; }
+.race h2 { font: 600 1.05rem/1.3 var(--num); margin: 0 0 16px; }
+.lane { display: grid; grid-template-columns: minmax(150px, 220px) 1fr 84px; align-items: center; gap: 14px; margin: 10px 0; }
+.lane .who { font-size: 0.95rem; }
+.lane .who small { display: block; color: var(--muted); font-size: 0.8rem; }
+.track { position: relative; height: 22px; }
+.track .zero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--muted); }
+.track .bar { position: absolute; top: 0; height: 100%; border-radius: 2px; transform-origin: left; animation: grow .7s ease-out both; }
+.lane .val { font: 600 1.35rem/1 var(--num); text-align: right; font-variant-numeric: tabular-nums; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .track .bar { animation: none; } }
+.race p { margin: 14px 0 0; color: var(--muted); font-size: 0.85rem; max-width: 76ch; }
+
+nav.tabs { display: flex; gap: 4px; margin: 32px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav.tabs button { font: 600 1rem var(--num); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabnote { color: var(--muted); font-size: 0.9rem; margin: 12px 0 0; max-width: 80ch; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 16px 0 10px; }
+.controls input[type=search], .controls select { font: inherit; font-size: 0.95rem; color: var(--ink); background: var(--sheet); border: 1px solid var(--line); border-radius: 4px; padding: 7px 10px; }
+.controls input[type=search] { min-width: 220px; }
+.controls label { font-size: 0.92rem; display: flex; gap: 6px; align-items: center; }
+.count { margin-left: auto; color: var(--muted); font-size: 0.9rem; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; }
+.legend .key { display: inline-flex; align-items: center; gap: 5px; }
+
+.tablebox { overflow-x: auto; background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font: 600 0.85rem var(--num); color: var(--muted); position: sticky; top: 0; background: var(--sheet); }
+th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+th button[data-dir]::after { content: attr(data-dir); margin-left: 4px; color: var(--accent); }
+td.num, th.num { text-align: right; font-family: var(--num); font-variant-numeric: tabular-nums; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+tbody tr:last-child td { border-bottom: 0; }
+.sym { font: 700 1rem var(--num); }
+.nm { color: var(--muted); font-size: 0.85rem; display: block; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+.up { color: var(--gain); } .down { color: var(--loss); }
+
+/* Rule strip: six cells, filled = pass, outline = fail, dotted = no data */
+.strip { display: inline-flex; gap: 3px; vertical-align: middle; }
+.cell { width: 13px; height: 13px; border-radius: 2px; border: 2px solid var(--ink); }
+.cell.ok { background: var(--ink); }
+.cell.no { background: transparent; }
+.cell.na { border-style: dotted; border-color: var(--none); }
+.passmark { font: 600 0.8rem var(--num); margin-left: 8px; padding: 1px 6px; border-radius: 3px; background: var(--gain-soft); color: var(--gain); }
+
+.pill { font: 600 0.8rem var(--num); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--line); }
+.pill.high { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pill.positive { color: var(--gain); } .pill.negative { color: var(--loss); }
+.empty { padding: 28px; color: var(--muted); }
+
+/* Detail drawer */
+.scrim { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); opacity: 0; pointer-events: none; transition: opacity .2s; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+aside.drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(620px, 100%); background: var(--sheet); border-left: 1px solid var(--line); transform: translateX(100%); transition: transform .25s ease; overflow-y: auto; padding: calc(20px + env(safe-area-inset-top, 0px)) 24px calc(32px + env(safe-area-inset-bottom, 0px)); }
+aside.drawer.open { transform: none; }
+@media (prefers-reduced-motion: reduce) { aside.drawer, .scrim { transition: none; } }
+.dhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.dhead h3 { font: 700 1.6rem/1.1 var(--num); margin: 0; }
+.dhead p { margin: 4px 0 0; color: var(--muted); }
+.close { font: 600 0.95rem var(--num); background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.ranges { display: flex; gap: 4px; margin: 18px 0 6px; flex-wrap: wrap; align-items: center; }
+.ranges button { font: 600 0.85rem var(--num); background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.ranges button[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); }
+.ranges .chg { margin-left: auto; font: 600 1rem var(--num); }
+.chart { width: 100%; height: 220px; display: block; }
+.readout { font: 500 0.85rem var(--num); color: var(--muted); min-height: 1.3em; }
+.drawer h4 { font: 600 1.05rem var(--num); margin: 26px 0 8px; }
+.rtable td, .rtable th { padding: 7px 8px; white-space: normal; }
+.rtable td.num { white-space: nowrap; }
+.mark { font-weight: 600; }
+.buzzbox p { margin: 6px 0; max-width: 62ch; }
+.buzzbox ul { margin: 4px 0 8px; padding-left: 20px; }
+.fine { color: var(--muted); font-size: 0.82rem; }
+footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; max-width: 80ch; }
+footer ol { padding-left: 20px; }
+@media (max-width: 640px) {
+  .lane { grid-template-columns: 1fr 70px; }
+  .lane .track { grid-column: 1 / -1; order: 3; }
+  .count { margin-left: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>S&amp;P 500 screen</h1>
+    <span class="stamp" id="stamp">Loading data…</span>
+  </header>
+
+  <section class="race" id="race" hidden></section>
+
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button role="tab" aria-selected="true" data-tab="jan">Jan 1 screen</button>
+    <button role="tab" aria-selected="false" data-tab="now">Today and 2027 buzz</button>
+    <button role="tab" aria-selected="false" data-tab="all">All stocks</button>
+  </nav>
+  <p class="tabnote" id="tabnote"></p>
+
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search ticker or company" aria-label="Search ticker or company">
+    <select id="sector" aria-label="Sector"><option value="">All sectors</option></select>
+    <label id="onlyWrap" hidden><input type="checkbox" id="only"> Passers only</label>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="tablebox"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+
+  <footer id="foot"></footer>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="dTitle" role="dialog"></aside>
+
+<script>
+const RULE_KEYS = ["rev", "eps", "opm", "fcf", "lev", "trend"];
+const RULE_SHORT = { rev: "Revenue", eps: "EPS", opm: "Margin", fcf: "Cash flow", lev: "Debt", trend: "Trend" };
+const NOTES = {
+  jan: "Stocks that passed all six rules using only filings and prices public on Dec 31, 2025, and what they have done since.",
+  now: "Stocks passing all six rules today. Buzz summarises public news and investor talk about 2027 for the top-ranked passers. It is not a recommendation.",
+  all: "Every current S&P 500 member with today's rule results. Click a row for the chart and details."
+};
+let DATA = null, tab = "jan", sortKey = null, sortDir = -1;
+const $ = s => document.querySelector(s);
+const pct = (v, d = 1) => v == null ? "–" : (v > 0 ? "+" : "") + (v * 100).toFixed(d) + "%";
+const cls = v => v == null ? "" : v >= 0 ? "up" : "down";
+const money = v => {
+  if (v == null) return "–";
+  if (v === 0) return "$0";
+  const a = Math.abs(v), s = v < 0 ? "-" : "";
+  return a >= 1e9 ? `${s}$${(a / 1e9).toFixed(1)}B` : a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1)}M` : `${s}$${Math.round(a / 1e3)}K`;
+};
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function ruleText(k, r) {
+  const v = r.v;
+  if (v == null) return "no data";
+  if (typeof v === "string") return v;
+  if (k === "fcf") return money(v);
+  if (k === "lev") return v.toFixed(1) + "x";
+  if (k === "opm") return (v * 100).toFixed(1) + "%";
+  return pct(v);
+}
+function strip(screen) {
+  const cells = RULE_KEYS.map(k => {
+    const r = screen.rules[k], st = r.ok === true ? "ok" : r.ok === false ? "no" : "na";
+    const word = st === "ok" ? "pass" : st === "no" ? "fail" : "no data";
+    return `<span class="cell ${st}" title="${RULE_SHORT[k]}: ${word} (${esc(ruleText(k, r))})"></span>`;
+  }).join("");
+  const label = RULE_KEYS.map(k => `${RULE_SHORT[k]} ${screen.rules[k].ok === true ? "pass" : screen.rules[k].ok === false ? "fail" : "no data"}`).join(", ");
+  return `<span class="strip" role="img" aria-label="${label}">${cells}</span>${screen.pass ? '<span class="passmark">Pass</span>' : ""}`;
+}
+
+function race() {
+  const s = DATA.summary;
+  const lanes = [
+    { who: "Jan 1 passers", sub: `${s.jan_passed} stocks, equal weight`, v: s.jan_basket_return, c: "var(--accent)" },
+    { who: "S&P 500", sub: `${s.benchmark} price`, v: s.benchmark_return, c: "var(--ink)" },
+    { who: "Median member", sub: "typical single stock", v: s.median_stock_return, c: "var(--muted)" }
+  ];
+  const vals = lanes.map(l => l.v ?? 0);
+  const lo = Math.min(0, ...vals), hi = Math.max(0, ...vals), span = (hi - lo) || 1;
+  const x = v => ((v - lo) / span) * 100;
+  $("#race").innerHTML = `<h2>Since Jan 1, 2026: the screen against the index</h2>` +
+    lanes.map(l => {
+      const a = x(Math.min(0, l.v ?? 0)), b = x(Math.max(0, l.v ?? 0));
+      return `<div class="lane"><div class="who">${l.who}<small>${l.sub}</small></div>
+        <div class="track"><span class="zero" style="left:${x(0)}%"></span>
+        <span class="bar" style="left:${a}%;width:${Math.max(b - a, 0.4)}%;background:${l.c}"></span></div>
+        <div class="val ${cls(l.v)}">${pct(l.v)}</div></div>`;
+    }).join("") +
+    `<p>Price returns in USD from the Dec 31, 2025 close to ${esc(DATA.stocks.find(r => r.price_date)?.price_date || DATA.today)}. The screen uses today's S&P 500 members, so stocks dropped from the index during the year are missing.</p>`;
+  $("#race").hidden = false;
+}
+
+function columns() {
+  const base = [
+    { k: "sym", t: "Stock", get: r => r.sym, html: r => `<span class="sym">${esc(r.sym)}</span><span class="nm">${esc(r.name)}</span>` },
+    { k: "sector", t: "Sector", get: r => r.sector, html: r => esc(r.sector) },
+  ];
+  const scr = r => tab === "jan" ? r.jan : r.now;
+  const rules = { k: "rules", t: tab === "jan" ? "Rules on Jan 1" : "Rules today", get: r => scr(r).n_ok + (scr(r).pass ? 10 : 0), html: r => strip(scr(r)) };
+  const score = { k: "score", t: "Growth score", num: true, get: r => scr(r).score, html: r => scr(r).score.toFixed(0) };
+  const ytd = { k: "ytd", t: "Since Jan 1", num: true, get: r => r.ytd, html: r => `<span class="${cls(r.ytd)}">${pct(r.ytd)}</span>` };
+  const price = { k: "price", t: "Price", num: true, get: r => r.price, html: r => r.price == null ? "–" : "$" + r.price.toFixed(2) };
+  const buzz = { k: "buzz", t: "2027 buzz", get: r => ({ high: 3, medium: 2, low: 1 })[r.buzz?.buzz] || 0,
+    html: r => r.buzz ? `<span class="pill ${esc(r.buzz.buzz)}">${esc(r.buzz.buzz)}</span> <span class="pill ${esc(r.buzz.sentiment)}">${esc(r.buzz.sentiment)}</span>` : '<span class="fine">not checked</span>' };
+  const ins = { k: "insider", t: "Insiders, 90 days", num: true, get: r => r.insider ? r.insider.buys_usd - r.insider.sells_usd : null,
+    html: r => r.insider ? `<span class="${r.insider.buys_usd > 0 ? "up" : ""}">${money(r.insider.buys_usd)} bought</span><br><span class="fine">${money(r.insider.sells_usd)} sold</span>` : "–" };
+  if (tab === "jan") return [...base, rules, score, ytd, price];
+  if (tab === "now") return [...base, rules, score, buzz, ins, ytd];
+  return [...base, rules, score, ytd, price];
+}
+
+function rows() {
+  const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value;
+  let list = DATA.stocks.filter(r =>
+    (!q || r.sym.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)) && (!sec || r.sector === sec));
+  if (tab === "jan") list = list.filter(r => r.jan.pass);
+  if (tab === "now") list = list.filter(r => r.now.pass);
+  if (tab === "all" && $("#only").checked) list = list.filter(r => r.now.pass);
+  const cols = columns();
+  const key = sortKey && cols.find(c => c.k === sortKey) ? sortKey : (tab === "jan" ? "ytd" : tab === "now" ? "score" : "sym");
+  const col = cols.find(c => c.k === key);
+  const dir = sortKey ? sortDir : (key === "sym" ? 1 : -1);
+  list.sort((a, b) => {
+    const x = col.get(a), y = col.get(b);
+    if (x == null) return 1; if (y == null) return -1;
+    return (typeof x === "string" ? x.localeCompare(y) : x - y) * dir;
+  });
+  return { list, cols, key, dir };
+}
+
+function render() {
+  const { list, cols, key, dir } = rows();
+  $("#tbl thead").innerHTML = "<tr>" + cols.map(c =>
+    `<th class="${c.num ? "num" : ""}" scope="col"><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
+  $("#tbl tbody").innerHTML = list.length ? list.map(r =>
+    `<tr tabindex="0" data-sym="${esc(r.sym)}">` + cols.map(c => `<td class="${c.num ? "num" : ""}">${c.html(r)}</td>`).join("") + "</tr>").join("")
+    : `<tr><td class="empty" colspan="${cols.length}">${tab === "all" ? "No stock matches the search or sector." : "No stock passes all six rules for this filter. Try All sectors or clear the search."}</td></tr>`;
+  $("#count").textContent = `${list.length} stock${list.length === 1 ? "" : "s"}`;
+  $("#tabnote").textContent = NOTES[tab];
+  $("#onlyWrap").hidden = tab !== "all";
+}
+
+/* Drawer with chart */
+let chartRows = null, range = "1Y";
+const RANGES = { "1W": 7, "1M": 31, "6M": 183, "1Y": 366, "5Y": 1827, "Max": 1e9 };
+async function openStock(sym) {
+  const r = DATA.stocks.find(s => s.sym === sym); if (!r) return;
+  const d = $("#drawer");
+  d.innerHTML = `<div class="dhead"><div><h3 id="dTitle">${esc(r.sym)}</h3><p>${esc(r.name)}, ${esc(r.sector)}</p></div>
+    <button class="close" id="dClose">Close</button></div>
+    <div class="ranges" role="group" aria-label="Chart range">${Object.keys(RANGES).map(k =>
+      `<button data-r="${k}" aria-pressed="${k === range}">${k}</button>`).join("")}<span class="chg" id="chg"></span></div>
+    <svg class="chart" id="chart" role="img" aria-label="Price chart for ${esc(r.sym)}"></svg>
+    <div class="readout" id="readout"></div>
+    ${detail(r)}`;
+  d.classList.add("open"); d.setAttribute("aria-hidden", "false"); $("#scrim").classList.add("open");
+  $("#dClose").focus();
+  chartRows = null;
+  try {
+    const res = await fetch(`data/prices/${encodeURIComponent(sym)}.json`);
+    if (!res.ok) throw new Error(res.status);
+    const j = await res.json(); chartRows = j.d.map((day, i) => [day, j.c[i]]);
+  } catch { $("#readout").textContent = "No price history for this stock yet. It fills in after the next nightly build."; }
+  drawChart();
+}
+function closeDrawer() {
+  $("#drawer").classList.remove("open"); $("#drawer").setAttribute("aria-hidden", "true"); $("#scrim").classList.remove("open");
+}
+function drawChart() {
+  const svg = $("#chart"); if (!svg || !chartRows || !chartRows.length) return;
+  const last = new Date(chartRows[chartRows.length - 1][0]);
+  const from = new Date(last - RANGES[range] * 864e5).toISOString().slice(0, 10);
+  const pts = chartRows.filter(p => p[0] >= from);
+  if (pts.length < 2) return;
+  const W = svg.clientWidth || 560, H = 220, pad = 6;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const ys = pts.map(p => p[1]), lo = Math.min(...ys), hi = Math.max(...ys), sp = (hi - lo) || 1;
+  const X = i => pad + (i / (pts.length - 1)) * (W - 2 * pad), Y = v => H - pad - ((v - lo) / sp) * (H - 2 * pad);
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(p[1]).toFixed(1)}`).join("");
+  const chg = pts[pts.length - 1][1] / pts[0][1] - 1, col = chg >= 0 ? "var(--gain)" : "var(--loss)";
+  svg.innerHTML = `<path d="${line}L${X(pts.length - 1)},${H}L${X(0)},${H}Z" fill="${col}" opacity="0.08"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="1.8" vector-effect="non-scaling-stroke"/>
+    <line id="xh" y1="0" y2="${H}" stroke="var(--muted)" stroke-dasharray="3 3" opacity="0"/>`;
+  $("#chg").innerHTML = `<span class="${cls(chg)}">${pct(chg)}</span>`;
+  const readout = $("#readout");
+  readout.textContent = `${pts[0][0]} to ${pts[pts.length - 1][0]}`;
+  svg.onpointermove = e => {
+    const b = svg.getBoundingClientRect(), i = Math.round(((e.clientX - b.left) / b.width * W - pad) / (W - 2 * pad) * (pts.length - 1));
+    const p = pts[Math.max(0, Math.min(pts.length - 1, i))];
+    const xh = svg.querySelector("#xh"); xh.setAttribute("x1", X(pts.indexOf(p))); xh.setAttribute("x2", X(pts.indexOf(p))); xh.setAttribute("opacity", 1);
+    readout.textContent = `${p[0]}: $${p[1].toFixed(2)}`;
+  };
+  svg.onpointerleave = () => { svg.querySelector("#xh").setAttribute("opacity", 0); readout.textContent = `${pts[0][0]} to ${pts[pts.length - 1][0]}`; };
+}
+function detail(r) {
+  const mark = ok => ok === true ? '<span class="mark up">Pass</span>' : ok === false ? '<span class="mark down">Fail</span>' : '<span class="fine">No data</span>';
+  const rulesTbl = `<h4>Rules, Jan 1 and today</h4><table class="rtable"><thead><tr><th>Rule</th><th class="num">Jan 1</th><th class="num">Today</th></tr></thead><tbody>` +
+    RULE_KEYS.map(k => `<tr><td>${esc(DATA.rules[k])}</td>
+      <td class="num">${esc(ruleText(k, r.jan.rules[k]))}<br>${mark(r.jan.rules[k].ok)}</td>
+      <td class="num">${esc(ruleText(k, r.now.rules[k]))}<br>${mark(r.now.rules[k].ok)}</td></tr>`).join("") +
+    `</tbody></table><p class="fine">Latest filed period: ${esc(r.jan.period_end || "none")} on Jan 1, ${esc(r.now.period_end || "none")} today.</p>`;
+  let buzz = "";
+  if (r.buzz) {
+    const b = r.buzz;
+    buzz = `<h4>2027 buzz</h4><div class="buzzbox">
+      <p><span class="pill ${esc(b.buzz)}">${esc(b.buzz)} attention</span> <span class="pill ${esc(b.sentiment)}">${esc(b.sentiment)}</span></p>
+      <p>${esc(b.outlook_2027)}</p>
+      ${b.catalysts?.length ? `<p class="fine">Catalysts people mention</p><ul>${b.catalysts.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+      ${b.risks?.length ? `<p class="fine">Risks people mention</p><ul>${b.risks.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+      ${b.sources?.length ? `<p class="fine">Sources</p><ul>${b.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul>` : ""}
+      <p class="fine">AI summary of public sources, checked ${esc(b.fetched)}. Not investment advice.</p></div>`;
+  } else if (r.now.pass) {
+    buzz = `<h4>2027 buzz</h4><p class="fine">Not checked. Buzz is refreshed weekly for the ${esc(DATA.summary.buzz_top_n)} highest-scoring passers.</p>`;
+  }
+  const ins = r.insider ? `<h4>Insider trades, last ${r.insider.window_days} days</h4>
+    <p>${money(r.insider.buys_usd)} bought on the open market (${r.insider.n_buys} trades), ${money(r.insider.sells_usd)} sold (${r.insider.n_sells} trades). From public Form 4 filings.</p>` : "";
+  return rulesTbl + buzz + ins;
+}
+
+function footer() {
+  $("#foot").innerHTML = `<p>A stock passes when all six rules hold:</p><ol>${RULE_KEYS.map(k => `<li>${esc(DATA.rules[k])}</li>`).join("")}</ol>
+    <p>Fundamentals come from SEC EDGAR filings, using only what was filed by each screen date. Prices are daily closes in USD. Built ${esc(DATA.generated.replace("T", " "))} UTC. For personal research only, not investment advice.</p>`;
+  $("#legend").innerHTML = `<span class="key"><span class="cell ok"></span> pass</span><span class="key"><span class="cell no"></span> fail</span><span class="key"><span class="cell na"></span> no data</span><span>Order: ${RULE_KEYS.map(k => RULE_SHORT[k]).join(", ")}</span>`;
+}
+
+async function init() {
+  try {
+    const res = await fetch("data/screen.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(res.status);
+    DATA = await res.json();
+  } catch {
+    $("#stamp").textContent = "No data yet. Run the Nightly build workflow once in the repo's Actions tab, then reload.";
+    return;
+  }
+  $("#stamp").textContent = `Prices through ${DATA.stocks.find(r => r.price_date)?.price_date || DATA.today}`;
+  [...new Set(DATA.stocks.map(r => r.sector))].sort().forEach(s => $("#sector").insertAdjacentHTML("beforeend", `<option>${esc(s)}</option>`));
+  race(); footer(); render();
+}
+
+document.querySelector("nav.tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  tab = b.dataset.tab; sortKey = null;
+  document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  render();
+});
+["#q", "#sector", "#only"].forEach(s => $(s).addEventListener("input", render));
+$("#tbl thead").addEventListener("click", e => {
+  const b = e.target.closest("button[data-k]"); if (!b) return;
+  sortDir = sortKey === b.dataset.k ? -sortDir : (b.dataset.k === "sym" || b.dataset.k === "sector" ? 1 : -1);
+  sortKey = b.dataset.k; render();
+});
+$("#tbl tbody").addEventListener("click", e => { const tr = e.target.closest("tr[data-sym]"); if (tr) openStock(tr.dataset.sym); });
+$("#tbl tbody").addEventListener("keydown", e => { const tr = e.target.closest("tr[data-sym]"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openStock(tr.dataset.sym); } });
+$("#drawer").addEventListener("click", e => {
+  const b = e.target.closest("button[data-r]");
+  if (b) { range = b.dataset.r; document.querySelectorAll(".ranges button").forEach(x => x.setAttribute("aria-pressed", x === b)); drawChart(); }
+  if (e.target.id === "dClose") closeDrawer();
+});
+$("#scrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+window.addEventListener("resize", () => { if ($("#drawer").classList.contains("open")) drawChart(); });
+init();
+</script>
+</body>
+</html>
