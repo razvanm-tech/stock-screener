@@ -196,7 +196,7 @@ footer ol { padding-left: 20px; }
       <dt>Today and 2027 buzz</dt>
       <dd>Stocks passing all six rules today, ranked by growth score. The top-ranked ones also show what news and analysts expect for 2027 and recent insider trades.</dd>
       <dt>All stocks</dt>
-      <dd>Every member with today's results. Tick "Passers only" to narrow it down.</dd>
+      <dd>Every member with today's results, including 2027 buzz written for stocks that do not pass. Tick "Passers only" to narrow it down, or sort by the 2027 buzz column to bring every stock with buzz to the top.</dd>
       <dt>Biggest gainers</dt>
       <dd>This year's top gainers with the results they had on Jan 1, before they rose, and a table showing which rules and signals pointed at the winners.</dd>
     </dl>
@@ -373,7 +373,7 @@ function columns() {
     html: r => r.insider ? `<span class="${r.insider.buys_usd > 0 ? "up" : ""}">${money(r.insider.buys_usd)} bought</span><br><span class="fine">${money(r.insider.sells_usd)} sold</span>` : "–" };
   if (janView) return [...base, rules, score, rs, accel, ytd, price];
   if (tab === "now") return [...base, rules, score, rs, accel, buzz, ins, ytd];
-  return [...base, rules, score, rs, accel, ytd, price];
+  return [...base, rules, score, rs, accel, buzz, ytd, price];
 }
 
 function rows() {

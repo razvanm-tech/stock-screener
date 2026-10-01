@@ -263,6 +263,72 @@
     ],
     "fetched": "2026-10-01"
   },
+  "GEV": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Backlog is set to pass $200B early in 2027, a year ahead of plan, with gas turbines largely sold out and output rising.",
+    "catalysts": ["Gas turbine backlog and reservations above 100 GW", "Turbine output planned at 24 GW in 2027", "Service orders growing with equipment"],
+    "risks": ["Wind business still drags on profit", "High expectations after a strong year"],
+    "sources": [
+      {"title": "GE Vernova now expects to reach $200B backlog in 2027 (Newsquawk)", "url": "https://www.newsquawk.com/headlines/ge-vernova-gev-now-expects-to-reach-usd-200bln-of-backlog-in-2027-vs-prev-expectation-of-2028"},
+      {"title": "GE Vernova backlog hits 50 GW; Wells Fargo sees 2028 margin upside (Yahoo Finance)", "url": "https://finance.yahoo.com/news/ge-vernova-backlog-hits-50-082001096.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "PWR": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "A record backlog of about $53B gives Quanta its best view into 2027 in years, from grid upgrades and data center power.",
+    "catalysts": ["Utility transmission and grid upgrades", "Data centers, its fastest-growing backlog segment", "Large in-house skilled workforce"],
+    "risks": ["Depends on large projects continuing", "Valuation after a big run"],
+    "sources": [
+      {"title": "Can Quanta's $53B backlog keep its infrastructure boom alive? (Zacks)", "url": "https://www.zacks.com/stock/news/2987115/can-quantas-53b-backlog-keep-its-infrastructure-boom-alive"},
+      {"title": "Is Quanta's data center exposure turning into its growth catalyst? (Nasdaq)", "url": "https://www.nasdaq.com/articles/quantas-data-center-exposure-turning-its-growth-catalyst"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "VRT": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "A backlog near $15B and booming liquid cooling orders support growth, though some warn data center capacity could overshoot in 2027.",
+    "catalysts": ["Liquid cooling for AI server racks", "Backlog around $15B", "ThermoKey deal adds cooling capacity"],
+    "risks": ["Possible data center overbuild in 2027", "Stock already up sharply in 2026"],
+    "sources": [
+      {"title": "Vertiv's $15 billion backlog: the loudest AI signal of 2026 (Nasdaq)", "url": "https://www.nasdaq.com/articles/vertivs-15-billion-backlog-loudest-ai-signal-2026"},
+      {"title": "AI data center stock and the oversupply question (Motley Fool)", "url": "https://fool.com/investing/2026/05/22/ai-data-center-stock-buy-oversupply-vrt/"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "ETN": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Data center orders surged and analysts raised 2027 EPS estimates; Eaton is adding liquid cooling and working with Nvidia on AI power.",
+    "catalysts": ["Data center electrical orders up sharply", "Boyd Thermal deal adds liquid cooling", "Nvidia collaboration on AI factory power"],
+    "risks": ["Other segments grow more slowly", "Integrating large acquisitions"],
+    "sources": [
+      {"title": "How data center expansion is reshaping Eaton's business (Nasdaq)", "url": "https://www.nasdaq.com/articles/how-data-center-expansion-reshaping-eatons-business"},
+      {"title": "Eaton's growth targets look achievable, analyst raises EPS forecast for 2026 and 2027 (AOL)", "url": "https://www.aol.com/finance/eatons-growth-targets-look-achievable-193523224.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "CEG": {
+    "buzz": "medium", "sentiment": "mixed",
+    "outlook_2027": "Shares fell in 2026 after the Crane nuclear restart slipped toward 2031; analysts stay bullish, citing long-term power contracts and raised guidance.",
+    "catalysts": ["New 15-20 year power purchase agreements", "Raised 2026 earnings guidance", "Strong Buy consensus despite the drop"],
+    "risks": ["Crane restart may slip to 2031", "Nuclear projects have long, uncertain timelines"],
+    "sources": [
+      {"title": "Constellation Energy stock is down in 2026: why analysts see higher fair value (TIKR)", "url": "https://www.tikr.com/blog/constellation-energy-stock-is-down-18-in-2026-heres-why-analysts-see-401-fair-value"},
+      {"title": "Why Constellation Energy stock flopped today (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/stocks/articles/why-constellation-energy-stock-flopped-143413044.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "VST": {
+    "buzz": "medium", "sentiment": "mixed",
+    "outlook_2027": "Despite strong operations, low Texas power prices cut 2027 earnings estimates; bulls point to Meta and AWS contracts and a gas acquisition.",
+    "catalysts": ["Long-term power deals with Meta and AWS", "Pending gas plant acquisition", "Adjusted EBITDA up over 30%"],
+    "risks": ["Texas wholesale power near $30/MWh", "2027 EPS estimates revised down"],
+    "sources": [
+      {"title": "Vistra has edged lower through 2026: one bank says it's on the verge of doubling (24/7 Wall St.)", "url": "https://247wallst.com/investing/2026/09/09/vistra-has-edged-lower-throughout-2026-one-bank-says-its-on-the-verge-of-doubling/"},
+      {"title": "Vistra stock fell 5% in a broad power selloff (TIKR)", "url": "https://www.tikr.com/blog/vistra-stock-fell-5-in-a-broad-power-selloff-heres-where-the-stock-could-go"}
+    ],
+    "fetched": "2026-10-01"
+  },
   "LRCX": {
     "buzz": "medium", "sentiment": "positive",
     "outlook_2027": "Analysts expect two strong years of chip equipment spending, with 2027 forecasts raised on AI and memory demand.",
