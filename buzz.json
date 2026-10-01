@@ -1,0 +1,277 @@
+{
+  "MU": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Analysts expect AI memory (HBM) demand to exceed supply into 2027, with consensus 2027 EPS near $100 and pricing staying firm.",
+    "catalysts": ["HBM supply sold out through 2026", "HBM market seen near $100B by 2028", "Rising DRAM and HBM contract prices"],
+    "risks": ["New memory capacity could end the shortage", "Estimates are already very high in a cyclical industry"],
+    "sources": [
+      {"title": "Micron's accelerating HBM ramp extends growth into 2027 (MarketBeat)", "url": "https://www.marketbeat.com/articles/micron-accelerating-hbm-ramp-extends-growth-into-2027/"},
+      {"title": "Micron accelerating HBM ramp extends growth into 2027 (Nasdaq)", "url": "https://www.nasdaq.com/articles/micron-accelerating-hbm-ramp-extends-growth-2027"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "PLTR": {
+    "buzz": "high", "sentiment": "mixed",
+    "outlook_2027": "Analysts model fast revenue growth and rising margins into 2027, but are split on whether the valuation already prices that in.",
+    "catalysts": ["Commercial adoption of its AI platform", "Expanding margins and free cash flow", "Government and defense contracts"],
+    "risks": ["Very high valuation", "Rising competition in AI software"],
+    "sources": [
+      {"title": "Palantir stock prediction: where analysts see it going by 2027 (TIKR)", "url": "https://www.tikr.com/blog/palantir-stock-prediction-where-analysts-see-it-going-by-2027"},
+      {"title": "1 Wall Street analyst believes Palantir will more... (Motley Fool)", "url": "https://www.fool.com/investing/2026/07/02/1-wall-street-analyst-believes-palantir-will-more/"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "SNDK": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Wall Street sees fiscal 2027 revenue more than doubling on a NAND flash shortage, with growth slowing as supply catches up.",
+    "catalysts": ["NAND prices rising on tight supply", "Enterprise SSD demand from AI data centers"],
+    "risks": ["NAND supply may exceed demand in late 2027", "2026's top S&P stock carries very high expectations"],
+    "sources": [
+      {"title": "Are Wall Street analysts bullish on Sandisk stock? (Barchart)", "url": "https://www.barchart.com/story/news/3663127/are-wall-street-analysts-bullish-on-sandisk-stock"},
+      {"title": "Can Sandisk stock rally further in 2026? (Barchart)", "url": "https://www.barchart.com/story/news/37327980/can-sandisk-stock-rally-further-in-2026"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "WDC": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Hard drives are sold out for 2026 with long-term deals into 2027 and 2028; analysts raised 2027 EPS on AI storage demand.",
+    "catalysts": ["Long-term supply deals for 2027 and 2028", "Higher-capacity ePMR and HAMR drive ramps", "Exabyte demand growing over 25%"],
+    "risks": ["New drive generations must ramp on schedule", "Storage pricing is historically cyclical"],
+    "sources": [
+      {"title": "Western Digital Q4 earnings call highlights (Nasdaq)", "url": "https://www.nasdaq.com/articles/western-digital-q4-earnings-call-highlights"},
+      {"title": "Bank of America resets WDC price target (Yahoo Finance)", "url": "https://finance.yahoo.com/news/bank-america-resets-wdc-price-040700563.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "INCY": {
+    "buzz": "low", "sentiment": "mixed",
+    "outlook_2027": "The debate is whether newer drugs like Opzelura can replace Jakafi revenue before Jakafi's patent expires in 2028.",
+    "catalysts": ["Opzelura growth and the Jakafi XR launch", "14 pivotal trials across seven drugs"],
+    "risks": ["Jakafi patent cliff in 2028", "Opzelura sales guided below expectations"],
+    "sources": [
+      {"title": "Incyte weak 2026 revenue forecast heightens Jakafi patent concerns (Yahoo Finance)", "url": "https://finance.yahoo.com/news/incyte-weak-2026-revenue-forecast-131538277.html"},
+      {"title": "Incyte stock fell 7% last week: what the rest of 2026 could look like (TIKR)", "url": "https://www.tikr.com/blog/incyte-stock-fell-7-last-week-heres-what-the-rest-of-2026-could-look-like"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "TER": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Management sees AI-driven chip test demand extending growth into 2027; over 60% of recent revenue was AI-related.",
+    "catalysts": ["Testing for AI accelerators and HBM memory", "More complex chips need more test time", "Rising analyst price targets"],
+    "risks": ["Chip equipment spending forecasts may be too high", "Valuation already assumes strong AI demand"],
+    "sources": [
+      {"title": "TER stock gains after Q2 beat; CEO sees growth extending into 2027 (Stocktwits)", "url": "https://stocktwits.com/news-articles/markets/equity/ter-stock-teradyne-q2-beat-ceo-demand-robust-2027-growth/cZNRstLRJRZ"},
+      {"title": "Teradyne looks expensive until you price the AI chips it has not tested yet (Trefis)", "url": "https://www.trefis.com/articles/615395/teradyne-looks-expensive-until-you-price-the-ai-chips-it-has-not-tested-yet/2026-09-15"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "NVDA": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Analysts expect the Vera Rubin platform, ramping from late 2026, to drive data center growth into 2027 now that supply constraints have eased.",
+    "catalysts": ["Vera Rubin ramp in the second half of 2026", "HBM4 memory supply issues resolved", "Continued hyperscaler AI spending"],
+    "risks": ["Blackwell revenue falls as Rubin replaces it", "Any slowdown in AI capex hits growth"],
+    "sources": [
+      {"title": "Nvidia earnings preview (S&P Global Market Intelligence, Aug 2026)", "url": "https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/08/nvidia-earnings-preview-q2-2027"},
+      {"title": "Why analysts see Nvidia's AI roadmap driving EPS upside into 2027 (Yahoo Finance)", "url": "https://finance.yahoo.com/news/why-analysts-see-nvidia-ai-135411494.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "AMD": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "MI450 rack systems and the OpenAI deal, with first revenue in Q4 2026, could lift data center AI sales sharply in 2027.",
+    "catalysts": ["OpenAI GPU deployments starting Q4 2026", "MI450 rack-scale launch", "MI500 chips planned for 2027"],
+    "risks": ["Depends on the OpenAI deal landing on schedule", "Competes with Nvidia's Rubin platform"],
+    "sources": [
+      {"title": "Where will Advanced Micro Devices stock be in 2 years? (Nasdaq)", "url": "https://www.nasdaq.com/articles/where-will-advanced-micro-devices-stock-be-2-years"},
+      {"title": "AMD: why this stock could break a trillion dollar market cap (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/stocks/articles/advanced-micro-devices-amd-why-140607453.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "PTC": {
+    "buzz": "low", "sentiment": "mixed",
+    "outlook_2027": "After selling Kepware and ThingWorx, PTC is refocusing on AI-driven design software; several analysts cut targets on growth concerns.",
+    "catalysts": ["AI-native PTC Next product launched mid-2026", "Buybacks funded by the divestiture"],
+    "risks": ["About $70M free cash flow headwind in fiscal 2027", "Lower revenue growth and margin estimates"],
+    "sources": [
+      {"title": "Are Wall Street analysts predicting PTC stock will climb or sink? (Barchart)", "url": "https://www.barchart.com/story/news/36124224/are-wall-street-analysts-predicting-ptc-stock-will-climb-or-sink"},
+      {"title": "PTC future growth (Simply Wall St)", "url": "https://www.simplywall.st/stock/NasdaqGS/PTC"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "KEYS": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "AI network build-outs more than doubled wireline orders; analysts expect about 20% EPS growth in fiscal 2027, limited mainly by supply.",
+    "catalysts": ["800G to 1.6T network speed upgrades", "Testing for silicon photonics and co-packaged optics", "AI revenue already above all of 2025"],
+    "risks": ["Supply limits how fast orders become revenue", "One-time tariff effects lifted 2026 margins"],
+    "sources": [
+      {"title": "After a record quarter, does Keysight stock still offer upside by 2028? (TIKR)", "url": "https://www.tikr.com/blog/after-a-record-quarter-does-keysight-technologies-nyse-keys-stock-still-offer-upside-by-2028"},
+      {"title": "Here's what to expect from Keysight's next earnings report (Barchart)", "url": "https://www.barchart.com/story/news/1472139/here-s-what-to-expect-from-keysight-technologies-next-earnings-report"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "GLW": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Corning raised its Springboard plan to a $30B sales run rate by 2028, driven by fiber demand in AI data centers.",
+    "catalysts": ["Shift from copper to fiber in AI data centers", "Raised Springboard sales targets", "Rising 2027 EPS estimates"],
+    "risks": ["Depends on continued hyperscaler spending", "High expectations after a strong run"],
+    "sources": [
+      {"title": "Corning Q2 2026 earnings preview (Hudson Labs)", "url": "https://hudson-labs.com/research/corning-q2-2026-earnings-preview-glw-revenue-and-outlook"},
+      {"title": "Springboard plan and AI connectivity fuel growth (Simply Wall St)", "url": "https://simplywall.st/community/narratives/us/tech/nyse-glw/corning/springboard-plan-and-ai-connectivity-fuel-exciting-growth-across-diverse-segments"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "ADI": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Analysts expect steady growth into 2027 as an industrial recovery combines with AI data center and power demand.",
+    "catalysts": ["Recovery in industrial, its most profitable market", "Record data center orders", "Upgrades calling it best-in-class in analog chips"],
+    "risks": ["The industrial recovery could stall", "Valuation near 26x forward earnings"],
+    "sources": [
+      {"title": "Analog Devices stock prediction: where analysts see it going by 2027 (TIKR)", "url": "https://www.tikr.com/blog/analog-devices-stock-prediction-where-analysts-see-the-stock-going-by-2027"},
+      {"title": "Analog Devices is up 15% in 2026 and Wall Street still sees room to run (TIKR)", "url": "https://www.tikr.com/blog/analog-devices-is-up-15-in-2026-and-wall-street-still-sees-room-to-run"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "WDAY": {
+    "buzz": "medium", "sentiment": "mixed",
+    "outlook_2027": "AI agents now drive over a quarter of new contract value, but analysts are split after cautious guidance and some downgrades.",
+    "catalysts": ["Agentic AI nearing $500M in annual recurring revenue", "Raised operating margin guidance"],
+    "risks": ["Downgrades from Morgan Stanley and CLSA", "Revenue guidance reaffirmed, not raised"],
+    "sources": [
+      {"title": "Workday Q1 earnings call highlights (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/stocks/articles/workday-q1-earnings-call-highlights-220640491.html"},
+      {"title": "Workday's Q2 2027 earnings: what to expect (Barchart)", "url": "https://www.barchart.com/story/news/3448515/workday-s-q2-2027-earnings-what-to-expect"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "STX": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Analysts expect fiscal 2027 EPS to more than double as AI storage demand meets the ramp of high-capacity HAMR drives.",
+    "catalysts": ["HAMR Mozaic drives ramping in volume", "Strong Buy consensus with raised targets", "High-capacity nearline demand from AI"],
+    "risks": ["Storage is historically cyclical", "Sharp pullbacks already happened this year"],
+    "sources": [
+      {"title": "Seagate Q4 earnings call highlights AI storage demand (Nasdaq)", "url": "https://www.nasdaq.com/articles/seagate-technology-q4-earnings-call-highlights-ai-storage-demand"},
+      {"title": "Seagate stock is off 27%: why it's time to buy the dip (Barchart)", "url": "https://www.barchart.com/story/news/4307718/seagate-stock-is-off-27-why-its-time-to-buy-the-dip-in-stx-for-36-upside"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "MRVL": {
+    "buzz": "high", "sentiment": "positive",
+    "outlook_2027": "Marvell guides about 40% revenue growth in fiscal 2027, with data center sales growing faster on custom AI chips and optics.",
+    "catalysts": ["Amazon Trainium 3 custom chip ramp", "Demand for optical interconnects", "Microsoft Maia chip program"],
+    "risks": ["Custom chips weigh on gross margin", "Depends on a few large cloud customers"],
+    "sources": [
+      {"title": "Marvell stock has doubled in 2026; analysts are still playing catch-up (TIKR)", "url": "https://tikr.com/blog/marvell-stock-has-doubled-in-2026-analysts-are-still-playing-catch-up"},
+      {"title": "Can MRVL's AI infrastructure growth outpace its margin pressure? (Nasdaq)", "url": "https://www.nasdaq.com/articles/can-mrvls-ai-infrastructure-growth-outpace-its-margin-pressure"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "TEL": {
+    "buzz": "low", "sentiment": "positive",
+    "outlook_2027": "TE expects AI revenue to grow 25-30% in fiscal 2027 to about $3B, helped by data center power and grid demand.",
+    "catalysts": ["AI connector backlog extending into 2027", "Grid hardening and data center power", "Margin gains from productivity"],
+    "risks": ["Looks fairly valued after the run-up", "Auto and industrial volumes stay cyclical"],
+    "sources": [
+      {"title": "TE Connectivity Q3 earnings call highlights (Nasdaq)", "url": "https://www.nasdaq.com/articles/te-connectivity-q3-earnings-call-highlights"},
+      {"title": "TE Connectivity: growth boosted by data centers but fairly valued (Seeking Alpha)", "url": "https://seekingalpha.com/article/4909560-te-connectivity-stock-growth-boosted-by-data-centers-but-fairly-valued"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "NOW": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Analysts see roughly 18-22% growth through 2028, with Now Assist AI expected to pass $1.5B in contract value this year.",
+    "catalysts": ["Now Assist AI sales", "Strong federal business", "Target of $30B subscription revenue by 2030"],
+    "risks": ["AI agents could pressure seat-based pricing", "Software stocks out of favor in 2026"],
+    "sources": [
+      {"title": "ServiceNow stock finds support as analysts see upside to 2027 growth (Yahoo Finance)", "url": "https://finance.yahoo.com/news/servicenow-now-stock-finds-support-133717115.html"},
+      {"title": "ServiceNow stock prediction: where analysts see it going by 2027 (TIKR)", "url": "https://www.tikr.com/blog/servicenow-stock-prediction-where-analysts-see-the-stock-going-by-2027"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "APH": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Analysts expect about 20% EPS growth in 2027 on demand for AI data center connectors, with price targets recently raised.",
+    "catalysts": ["Broad connector range across AI architectures", "Data center market growth", "Work on optical connector standards"],
+    "risks": ["Premium valuation", "Depends on AI spending continuing"],
+    "sources": [
+      {"title": "Data center demand is rising: can it fuel further upside to APH stock? (Nasdaq)", "url": "https://www.nasdaq.com/articles/data-center-demand-rising-can-it-fuel-further-upside-aph-stock"},
+      {"title": "Amphenol's quarterly earnings preview (Barchart)", "url": "https://www.barchart.com/story/news/1035836/amphenols-quarterly-earnings-preview-what-you-need-to-know"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "EXPE": {
+    "buzz": "low", "sentiment": "mixed",
+    "outlook_2027": "Analysts expect about 16% EPS growth in 2027 from B2B deals and AI-driven marketing, but the consensus rating is Hold.",
+    "catalysts": ["B2B partnerships such as BMO and Uber", "AI personalization lifting conversion"],
+    "risks": ["Little upside to the consensus target", "Travel demand tracks consumer spending"],
+    "sources": [
+      {"title": "Expedia stock prediction: where analysts see it going by 2027 (TIKR)", "url": "https://www.tikr.com/blog/expedia-stock-prediction-where-analysts-see-the-stock-going-by-2027"},
+      {"title": "What to expect from Expedia Group's next quarterly earnings report (Barchart)", "url": "https://www.barchart.com/story/news/3382636/what-to-expect-from-expedia-group-s-next-quarterly-earnings-report"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "CF": {
+    "buzz": "low", "sentiment": "mixed",
+    "outlook_2027": "CF expects nitrogen fertilizer supply to stay tight through 2027 and is building its Blue Point low-carbon ammonia plant for 2029.",
+    "catalysts": ["Tight global nitrogen supply", "Blue Point low-carbon ammonia project", "Raised dividend and cash flow outlook"],
+    "risks": ["Fertilizer prices are cyclical", "Yazoo City restart delayed to 2027"],
+    "sources": [
+      {"title": "CF Industries Q2 earnings call highlights (Nasdaq)", "url": "https://www.nasdaq.com/articles/cf-industries-q2-earnings-call-highlights"},
+      {"title": "CF Industries reports first half 2026 results (company release)", "url": "https://ir.cfindustries.com/Investors/news/news-details/2026/CF-Industries-Holdings-Inc--Reports-First-Half-2026-Net-Earnings-of-1-34-Billion-Adjusted-EBITDA-of-2-18-Billion/default.aspx"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "DXCM": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "A possible Medicare decision to cover type 2 patients not on insulin could widen Dexcom's market from mid-2027.",
+    "catalysts": ["Medicare coverage for non-insulin type 2 patients", "Next-generation G8 sensor", "New manufacturing site in Ireland"],
+    "risks": ["Timing of the coverage decision is uncertain", "Competition in glucose monitors"],
+    "sources": [
+      {"title": "DexCom stock forecast: where analysts see it going by 2027 (TIKR)", "url": "https://tikr.com/blog/dexcom-stock-forecast-where-analysts-see-the-stock-going-by-2027"},
+      {"title": "DXCM Q2 deep dive: expanded access and product updates (Barchart)", "url": "https://www.barchart.com/story/news/3581604/dxcm-q2-deep-dive-expanded-access-and-product-updates-drive-growth"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "STLD": {
+    "buzz": "low", "sentiment": "positive",
+    "outlook_2027": "Steel Dynamics expects higher 2027 volumes from onshoring and infrastructure, with its new aluminum mill starting commercial shipments.",
+    "catalysts": ["Aluminum flat-rolled mill ramp in Mississippi", "US onshoring and infrastructure spending"],
+    "risks": ["Aluminum startup writedowns and delays", "Steel prices are cyclical"],
+    "sources": [
+      {"title": "Steel Dynamics stock forecast: where analysts see it going by 2027 (TIKR)", "url": "https://www.tikr.com/blog/steel-dynamics-stock-forecast-where-analysts-see-the-stock-going-by-2027"},
+      {"title": "Can Steel Dynamics justify its guidance after aluminum writedowns? (Barchart)", "url": "https://www.barchart.com/story/news/3342443/can-steel-dynamics-justify-its-guidance-after-aluminum-writedowns-and-relocation-drama"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "ABBV": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "AbbVie raised its 2027 outlook for Skyrizi and Rinvoq to over $31B; analysts expect earnings to keep recovering.",
+    "catalysts": ["Skyrizi and Rinvoq beating guidance", "Earnings recovery after Humira's decline"],
+    "risks": ["Drug pricing policy pressure", "Reliance on two immunology drugs"],
+    "sources": [
+      {"title": "AbbVie: Skyrizi and Rinvoq already cleared 2027 guidance (TIKR)", "url": "https://www.tikr.com/blog/abbvie-stock-skyrizi-and-rinvoq-already-cleared-2027-guidance-but-does-the-discount-still-make-sense"},
+      {"title": "Is Wall Street bullish or bearish on AbbVie stock? (Barchart)", "url": "https://www.barchart.com/story/news/30774434/is-wall-street-bullish-or-bearish-on-abbvie-stock"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "CRM": {
+    "buzz": "high", "sentiment": "mixed",
+    "outlook_2027": "Salesforce raised fiscal 2027 revenue guidance on Agentforce momentum, but fears that AI agents disrupt seat-based software weigh on the stock.",
+    "catalysts": ["Agentforce driving the fastest bookings growth in four years", "Raised revenue guidance and buybacks"],
+    "risks": ["AI disruption fears for seat-based software", "Growth of about 10-11% trails AI peers"],
+    "sources": [
+      {"title": "Salesforce's Q2 earnings beat; the guidance raise might matter more (TIKR)", "url": "https://www.tikr.com/blog/salesforces-q2-earnings-beat-by-a-mile-the-guidance-raise-might-matter-more"},
+      {"title": "Salesforce faces vital Agentforce test (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/stocks/articles/salesforce-faces-vital-agentforce-test-171700681.html"}
+    ],
+    "fetched": "2026-10-01"
+  },
+  "LRCX": {
+    "buzz": "medium", "sentiment": "positive",
+    "outlook_2027": "Analysts expect two strong years of chip equipment spending, with 2027 forecasts raised on AI and memory demand.",
+    "catalysts": ["DRAM and HBM investment", "Improving NAND upgrade cycle", "Raised 2027 equipment spending forecasts"],
+    "risks": ["Cleanroom space limits customers' expansion", "Equipment spending is cyclical"],
+    "sources": [
+      {"title": "Lam Research likely to benefit from healthy wafer equipment landscape, RBC says (Placera)", "url": "https://www.placera.se/telegram/lam-research-lam-research-likely-to-benefit-from-healthy-wafer-fabrication-equipment-landscape-rbc-says-20260423"},
+      {"title": "Bernstein analyst reaffirms Buy rating on Lam Research (Yahoo Finance)", "url": "https://finance.yahoo.com/news/bernstein-analyst-reaffirms-buy-rating-135022930.html"}
+    ],
+    "fetched": "2026-10-01"
+  }
+}

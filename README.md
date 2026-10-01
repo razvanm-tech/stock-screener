@@ -26,8 +26,9 @@ Passers are ranked by revenue growth plus EPS growth.
   the screen date are used.
 - **Prices:** your FMP key (up to 240 calls a night). When the budget runs out or a symbol
   fails, it falls back to two keyless sources. Daily closes are cached between runs.
-- **2027 buzz:** one Claude API call with web search per stock, for the 25 highest-scoring
-  passers, refreshed weekly. It uses public news, analyst notes and investor discussion only.
+- **2027 buzz:** written on request in a Claude Code session from public news, analyst notes
+  and investor discussion, and stored in `buzz.json`. Each nightly build publishes whatever
+  is in that file; nothing refreshes it automatically.
 - **Insiders:** open-market buys and sells over 90 days, from public SEC Form 4 filings.
 
 ## Setup
@@ -45,12 +46,11 @@ Passers are ranked by revenue growth plus EPS growth.
    git push -u origin main
    ```
 
-3. **Add three secrets.** Go to Settings, then Secrets and variables, then Actions, and add:
+3. **Add two secrets.** Go to Settings, then Secrets and variables, then Actions, and add:
    - `SEC_USER_AGENT`: your name and email, e.g. `Razvan stock-screener razvan@example.com`.
      The SEC requires a contact in every request.
-   - `FMP_API_KEY`: your Financial Modeling Prep key.
-   - `ANTHROPIC_API_KEY`: a key from console.anthropic.com. Skip it and the buzz column
-     stays empty; everything else still works.
+   - `FMP_API_KEY`: your Financial Modeling Prep key. Optional: without it, prices come
+     from the keyless fallbacks.
 
    Type keys only into GitHub's secret fields, never into a file or a chat.
 
@@ -67,19 +67,16 @@ Passers are ranked by revenue growth plus EPS growth.
 
 - **GitHub:** free for a public repo.
 - **SEC and price data:** free.
-- **Buzz column:** web search costs $10 per 1,000 searches plus model tokens. With at most
-  3 searches per stock and 25 stocks a week, search fees are at most about $0.75 a week.
-  Set a monthly spend limit in the Anthropic Console.
+- **Buzz column:** no API costs; it is written in a Claude Code session.
 
 ## Settings (optional repo variables or env)
 
 | Name | Default | Meaning |
 |---|---|---|
 | `SCREEN_START` | `2025-12-31` | Data cutoff for the backtest screen |
-| `GOSSIP_TOP_N` | `25` | How many top passers get a buzz check |
-| `GOSSIP_MAX_AGE_DAYS` | `7` | How often each buzz entry is refreshed |
+| `INSIDER_TOP_N` | `25` | How many top passers get an insider check |
+| `INSIDER_MAX_AGE_DAYS` | `7` | How often insider data is refreshed |
 | `FMP_DAILY_BUDGET` | `240` | FMP calls per run (free plan allows 250 a day) |
-| `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Model for the buzz column |
 
 ## Known limits
 
@@ -88,7 +85,8 @@ Passers are ranked by revenue growth plus EPS growth.
 - XBRL tags differ between companies. Banks and insurers often lack an operating income
   tag, so they show "no data" on the margin rule and don't pass.
 - Returns are price only, in USD, with no dividends, fees or EUR/USD effect.
-- The buzz column runs forward from the first build. It never reconstructs past sentiment.
+- The buzz column shows what was public when it was last written, with that date. It is
+  not refreshed automatically.
 - Charts use daily closes, so there is no intraday "today" view.
 
 ## Run locally

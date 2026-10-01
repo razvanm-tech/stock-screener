@@ -382,7 +382,7 @@ function detail(r) {
       ${b.sources?.length ? `<p class="fine">Sources</p><ul>${b.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul>` : ""}
       <p class="fine">AI summary of public sources, checked ${esc(b.fetched)}. Not investment advice.</p></div>`;
   } else if (r.now.pass) {
-    buzz = `<h4>2027 buzz</h4><p class="fine">Not checked. Buzz is refreshed weekly for the ${esc(DATA.summary.buzz_top_n)} highest-scoring passers.</p>`;
+    buzz = `<h4>2027 buzz</h4><p class="fine">Not checked yet. Buzz is added on request.</p>`;
   }
   const ins = r.insider ? `<h4>Insider trades, last ${r.insider.window_days} days</h4>
     <p>${money(r.insider.buys_usd)} bought on the open market (${r.insider.n_buys} trades), ${money(r.insider.sells_usd)} sold (${r.insider.n_sells} trades). From public Form 4 filings.</p>` : "";

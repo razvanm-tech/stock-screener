@@ -1,4 +1,7 @@
 """Offline tests: python -m unittest discover tests"""
+import datetime as dt
+import json
+import os
 import unittest
 
 from pipeline.edgar import parse_form4
@@ -109,6 +112,25 @@ class Form4(unittest.TestCase):
             <transactionPricePerShare><value>60</value></transactionPricePerShare></transactionAmounts>
           </nonDerivativeTransaction></nonDerivativeTable></ownershipDocument>"""
         self.assertEqual(parse_form4(xml), [("P", 100.0, 50.5), ("S", 10.0, 60.0)])
+
+
+class BuzzFile(unittest.TestCase):
+    """buzz.json is edited by hand; check it matches what the page expects."""
+    def test_entries(self):
+        path = os.path.join(os.path.dirname(__file__), "..", "buzz.json")
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        for sym, b in data.items():
+            with self.subTest(sym):
+                self.assertIn(b["buzz"], ("high", "medium", "low"))
+                self.assertIn(b["sentiment"], ("positive", "mixed", "negative"))
+                self.assertTrue(b["outlook_2027"].strip())
+                self.assertLessEqual(len(b["catalysts"]), 3)
+                self.assertLessEqual(len(b["risks"]), 2)
+                dt.date.fromisoformat(b["fetched"])
+                for s in b["sources"]:   # rendered as links on the page
+                    self.assertTrue(s["url"].startswith("https://"), s["url"])
+                    self.assertTrue(s["title"])
 
 
 if __name__ == "__main__":

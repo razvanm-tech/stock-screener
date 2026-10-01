@@ -1,14 +1,15 @@
-"""Nightly build: screen every S&P 500 stock on Jan 1 and today, add 2027 buzz.
+"""Nightly build: screen every S&P 500 stock on Jan 1 and today.
 
 Usage: python -m pipeline.run
-Env:   SEC_USER_AGENT (required), FMP_API_KEY, ANTHROPIC_API_KEY (optional)
+Env:   SEC_USER_AGENT (required), FMP_API_KEY (optional)
+The 2027 buzz column comes from buzz.json, which is written by hand on request.
 """
 import datetime as dt
 import json
 import os
 import statistics
 
-from . import edgar, gossip, prices
+from . import edgar, prices
 from .http import sec_headers
 from .fundamentals import metrics
 from .screen import RULES, evaluate
@@ -16,12 +17,13 @@ from .universe import load_constituents
 
 SCREEN_START = os.environ.get("SCREEN_START", "2025-12-31")   # Jan 1 screen = data public by Dec 31
 FMP_BUDGET = int(os.environ.get("FMP_DAILY_BUDGET", "240"))    # free plan allows 250/day
-BUZZ_TOP_N = int(os.environ.get("GOSSIP_TOP_N", "25"))
-BUZZ_MAX_AGE = int(os.environ.get("GOSSIP_MAX_AGE_DAYS", "7"))
+INSIDER_TOP_N = int(os.environ.get("INSIDER_TOP_N", "25"))
+INSIDER_MAX_AGE = int(os.environ.get("INSIDER_MAX_AGE_DAYS", "7"))
 BENCHMARK = "SPY"
 
 CACHE = "cache"
 OUT = os.path.join("site", "data")
+BUZZ_FILE = "buzz.json"
 
 
 def _clean(x):
@@ -41,20 +43,31 @@ def _write_chart(sym, series):
                   fh, separators=(",", ":"))
 
 
-def _cached_buzz(sym, today):
-    path = os.path.join(CACHE, "buzz", f"{sym}.json")
+def _load_buzz():
+    if not os.path.exists(BUZZ_FILE):
+        return {}
+    with open(BUZZ_FILE, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def _insider(sym, cik, today):
+    """Open-market insider trades, refreshed every INSIDER_MAX_AGE days."""
+    path = os.path.join(CACHE, "insider", f"{sym}.json")
+    cached = None
     if os.path.exists(path):
         with open(path) as fh:
-            data = json.load(fh)
-        fresh = (today - dt.date.fromisoformat(data["fetched"])).days < BUZZ_MAX_AGE
-        return data, fresh
-    return None, False
-
-
-def _save_buzz(sym, data):
-    os.makedirs(os.path.join(CACHE, "buzz"), exist_ok=True)
-    with open(os.path.join(CACHE, "buzz", f"{sym}.json"), "w") as fh:
+            cached = json.load(fh)
+        if (today - dt.date.fromisoformat(cached["fetched"])).days < INSIDER_MAX_AGE:
+            return cached["insider"]
+    try:
+        data = {"fetched": today.isoformat(), "insider": edgar.insider_summary(cik, today)}
+    except Exception as exc:  # keep stale data rather than nothing
+        print(f"  insider {sym}: {exc}")
+        return cached["insider"] if cached else None
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
         json.dump(data, fh)
+    return data["insider"]
 
 
 def main():
@@ -64,6 +77,7 @@ def main():
     budget = prices.Budget(FMP_BUDGET)
     fmp_key = os.environ.get("FMP_API_KEY", "").strip()
 
+    buzz = _load_buzz()
     universe = load_constituents()
     print(f"{len(universe)} constituents; screen start {SCREEN_START}; today {asof_now}")
 
@@ -101,30 +115,14 @@ def main():
             "sym": sym, "name": s["name"], "sector": s["sector"], "cik": s["cik"],
             "price": p_now, "price_date": series[-1][0] if series else None,
             "ytd": (p_now / p_start - 1) if p_now and p_start else None,
-            "jan": jan, "now": now, "buzz": None, "insider": None,
+            "jan": jan, "now": now, "buzz": buzz.get(sym), "insider": None,
         })
 
-    # 2027 buzz + insider activity for today's top passers.
+    # Insider activity for today's top passers.
     passers = sorted((r for r in rows if r["now"]["pass"]), key=lambda r: -r["now"]["score"])
-    for r in passers[:BUZZ_TOP_N]:
-        cached, fresh = _cached_buzz(r["sym"], today)
-        if not fresh:
-            entry = {"fetched": asof_now, "buzz": None, "insider": None}
-            try:
-                entry["buzz"] = gossip.buzz(r)
-            except Exception as exc:
-                print(f"  buzz {r['sym']}: {exc}")
-            try:
-                if r["cik"]:
-                    entry["insider"] = edgar.insider_summary(r["cik"], today)
-            except Exception as exc:
-                print(f"  insider {r['sym']}: {exc}")
-            if entry["buzz"] or entry["insider"]:
-                _save_buzz(r["sym"], entry)
-                cached = entry
-        if cached:
-            r["buzz"] = dict(cached["buzz"], fetched=cached["fetched"]) if cached.get("buzz") else None
-            r["insider"] = cached.get("insider")
+    for r in passers[:INSIDER_TOP_N]:
+        if r["cik"]:
+            r["insider"] = _insider(r["sym"], r["cik"], today)
 
     jan_pass = [r for r in rows if r["jan"]["pass"] and r["ytd"] is not None]
     all_ytd = [r["ytd"] for r in rows if r["ytd"] is not None]
@@ -135,7 +133,6 @@ def main():
         "benchmark_return": (spy_now / spy_start - 1) if spy_now and spy_start else None,
         "median_stock_return": statistics.median(all_ytd) if all_ytd else None,
         "now_passed": len(passers),
-        "buzz_top_n": BUZZ_TOP_N,
     }
     payload = {
         "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"),
