@@ -52,6 +52,14 @@ h1 { font: 700 2rem/1.1 var(--num); margin: 0; letter-spacing: -0.01em; }
 @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @media (prefers-reduced-motion: reduce) { .track .bar { animation: none; } }
 .race p { margin: 14px 0 0; color: var(--muted); font-size: 0.85rem; max-width: 76ch; }
+.race table.hit { margin-top: 14px; font-size: 0.92rem; }
+.hit td:first-child { white-space: normal; }
+.hit tr.best td { font-weight: 600; }
+.hit tbody tr:last-child td { border-bottom: 0; }
+.race details { margin-top: 16px; font-size: 0.92rem; }
+.race summary { cursor: pointer; font: 600 1rem var(--num); }
+.race details ul { margin: 8px 0 0; padding-left: 20px; max-width: 76ch; }
+.race details li { margin: 4px 0; }
 
 nav.tabs { display: flex; gap: 4px; margin: 32px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
 nav.tabs button { font: 600 1rem var(--num); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
@@ -139,8 +147,10 @@ footer ol { padding-left: 20px; }
     <button role="tab" aria-selected="true" data-tab="jan">Jan 1 screen</button>
     <button role="tab" aria-selected="false" data-tab="now">Today and 2027 buzz</button>
     <button role="tab" aria-selected="false" data-tab="all">All stocks</button>
+    <button role="tab" aria-selected="false" data-tab="win">Biggest gainers</button>
   </nav>
   <p class="tabnote" id="tabnote"></p>
+  <section class="race" id="hits" hidden></section>
 
   <div class="controls">
     <input type="search" id="q" placeholder="Search ticker or company" aria-label="Search ticker or company">
@@ -160,10 +170,12 @@ footer ol { padding-left: 20px; }
 <script>
 const RULE_KEYS = ["rev", "eps", "opm", "fcf", "lev", "trend"];
 const RULE_SHORT = { rev: "Revenue", eps: "EPS", opm: "Margin", fcf: "Cash flow", lev: "Debt", trend: "Trend" };
+const WIN_TABLE = 25, WIN_GROUP = 50;
 const NOTES = {
   jan: "Stocks that passed all six rules using only filings and prices public on Dec 31, 2025, and what they have done since.",
   now: "Stocks passing all six rules today. Buzz summarises public news and investor talk about 2027 for the top-ranked passers. It is not a recommendation.",
-  all: "Every current S&P 500 member with today's rule results. Click a row for the chart and details."
+  all: "Every current S&P 500 member with today's rule results. Click a row for the chart and details.",
+  win: `The ${WIN_TABLE} biggest gainers since Jan 1, with the rule results they had on Jan 1, before the move.`
 };
 let DATA = null, tab = "jan", sortKey = null, sortDir = -1;
 const $ = s => document.querySelector(s);
@@ -176,6 +188,8 @@ const money = v => {
   return a >= 1e9 ? `${s}$${(a / 1e9).toFixed(1)}B` : a >= 1e6 ? `${s}$${(a / 1e6).toFixed(1)}M` : `${s}$${Math.round(a / 1e3)}K`;
 };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const median = a => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return !s.length ? null : s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const byYtd = () => DATA.stocks.filter(r => r.ytd != null).sort((a, b) => b.ytd - a.ytd);
 
 function ruleText(k, r) {
   const v = r.v;
@@ -197,9 +211,12 @@ function strip(screen) {
 }
 
 function race() {
-  const s = DATA.summary;
+  const s = DATA.summary, med = median(DATA.stocks.filter(r => r.jan.pass && r.ytd != null).map(r => r.ytd));
+  const skew = s.jan_basket_return != null && med != null && s.jan_basket_return - med > 0.05
+    ? " The average beats the typical passer because a few big winners carry the basket." : "";
   const lanes = [
-    { who: "Jan 1 passers", sub: `${s.jan_passed} stocks, equal weight`, v: s.jan_basket_return, c: "var(--accent)" },
+    { who: "Jan 1 passers", sub: `${s.jan_passed} stocks, equal-weight average`, v: s.jan_basket_return, c: "var(--accent)" },
+    { who: "Typical Jan 1 passer", sub: "median of the same stocks", v: med, c: "color-mix(in srgb, var(--accent) 45%, var(--sheet))" },
     { who: "S&P 500", sub: `${s.benchmark} price`, v: s.benchmark_return, c: "var(--ink)" },
     { who: "Median member", sub: "typical single stock", v: s.median_stock_return, c: "var(--muted)" }
   ];
@@ -214,8 +231,32 @@ function race() {
         <span class="bar" style="left:${a}%;width:${Math.max(b - a, 0.4)}%;background:${l.c}"></span></div>
         <div class="val ${cls(l.v)}">${pct(l.v)}</div></div>`;
     }).join("") +
-    `<p>Price returns in USD from the Dec 31, 2025 close to ${esc(DATA.stocks.find(r => r.price_date)?.price_date || DATA.today)}. The screen uses today's S&P 500 members, so stocks dropped from the index during the year are missing.</p>`;
+    `<p>Price returns in USD from the Dec 31, 2025 close to ${esc(DATA.stocks.find(r => r.price_date)?.price_date || DATA.today)}. The screen uses today's S&P 500 members, so stocks dropped from the index during the year are missing.${skew}</p>`;
   $("#race").hidden = false;
+}
+
+function hits() {
+  const ranked = byYtd(), top = ranked.slice(0, WIN_GROUP), rest = ranked.slice(WIN_GROUP);
+  const rate = (list, f) => list.length ? list.filter(f).length / list.length : null;
+  const stats = [...RULE_KEYS.map(k => ({ t: DATA.rules[k], f: r => r.jan.rules[k].ok === true })),
+                 { t: "All six rules", f: r => r.jan.pass }].map(x => ({ t: x.t, a: rate(top, x.f), b: rate(rest, x.f) }));
+  const best = stats.slice(0, -1).reduce((m, x) => (x.a - x.b > m.a - m.b ? x : m));
+  const flagged = ranked.slice(0, WIN_TABLE).filter(r => r.jan.pass).length;
+  const p0 = v => v == null ? "–" : Math.round(v * 100) + "%";
+  $("#hits").innerHTML = `<h2>Did the rules spot this year's winners?</h2>
+    <p>${flagged} of the ${WIN_TABLE} biggest gainers since Jan 1 passed all six rules on Jan 1. The table shows how often each rule held on Jan 1 for the ${WIN_GROUP} biggest gainers and for every other stock. The bigger the gap, the more that rule pointed at winners.</p>
+    <table class="hit"><thead><tr><th scope="col">Rule on Jan 1</th><th class="num" scope="col">Top ${WIN_GROUP} gainers</th><th class="num" scope="col">Everyone else</th></tr></thead><tbody>
+    ${stats.map(x => `<tr${x === best ? ' class="best"' : ""}><td>${esc(x.t)}${x === best ? ' <span class="fine">biggest gap</span>' : ""}</td><td class="num">${p0(x.a)}</td><td class="num">${p0(x.b)}</td></tr>`).join("")}
+    </tbody></table>
+    <p>One year is a small sample, and one theme can dominate it. Signals like these improve the odds across many stocks; they rarely pick a single big winner in advance. About 4% of US stocks produced all of the market's net gain over Treasury bills since 1926 (Bessembinder, 2018).</p>
+    <details><summary>What else investors look at</summary><ul>
+      <li><b>Strength against the market:</b> the stock's 6 to 12 month return compared with the S&amp;P 500. Leaders tend to keep leading for a while.</li>
+      <li><b>Growth speeding up:</b> this quarter's growth rate compared with last quarter's, not just growth above a fixed bar.</li>
+      <li><b>Estimate changes and earnings surprises:</b> prices tend to keep drifting in the direction of a surprise for weeks.</li>
+      <li><b>Valuation:</b> price against earnings, sales or free cash flow. A great company can still be priced too high.</li>
+      <li><b>Return on capital and gross margin:</b> how much profit each dollar put into the business earns.</li>
+      <li><b>Share count:</b> whether the company issues new shares or buys them back.</li>
+    </ul></details>`;
 }
 
 function columns() {
@@ -223,8 +264,9 @@ function columns() {
     { k: "sym", t: "Stock", get: r => r.sym, html: r => `<span class="sym">${esc(r.sym)}</span><span class="nm">${esc(r.name)}</span>` },
     { k: "sector", t: "Sector", get: r => r.sector, html: r => esc(r.sector) },
   ];
-  const scr = r => tab === "jan" ? r.jan : r.now;
-  const rules = { k: "rules", t: tab === "jan" ? "Rules on Jan 1" : "Rules today", get: r => scr(r).n_ok + (scr(r).pass ? 10 : 0), html: r => strip(scr(r)) };
+  const janView = tab === "jan" || tab === "win";
+  const scr = r => janView ? r.jan : r.now;
+  const rules = { k: "rules", t: janView ? "Rules on Jan 1" : "Rules today", get: r => scr(r).n_ok + (scr(r).pass ? 10 : 0), html: r => strip(scr(r)) };
   const score = { k: "score", t: "Growth score", num: true, get: r => scr(r).score, html: r => scr(r).score.toFixed(0) };
   const ytd = { k: "ytd", t: "Since Jan 1", num: true, get: r => r.ytd, html: r => `<span class="${cls(r.ytd)}">${pct(r.ytd)}</span>` };
   const price = { k: "price", t: "Price", num: true, get: r => r.price, html: r => r.price == null ? "–" : "$" + r.price.toFixed(2) };
@@ -232,7 +274,7 @@ function columns() {
     html: r => r.buzz ? `<span class="pill ${esc(r.buzz.buzz)}">${esc(r.buzz.buzz)}</span> <span class="pill ${esc(r.buzz.sentiment)}">${esc(r.buzz.sentiment)}</span>` : '<span class="fine">not checked</span>' };
   const ins = { k: "insider", t: "Insiders, 90 days", num: true, get: r => r.insider ? r.insider.buys_usd - r.insider.sells_usd : null,
     html: r => r.insider ? `<span class="${r.insider.buys_usd > 0 ? "up" : ""}">${money(r.insider.buys_usd)} bought</span><br><span class="fine">${money(r.insider.sells_usd)} sold</span>` : "–" };
-  if (tab === "jan") return [...base, rules, score, ytd, price];
+  if (janView) return [...base, rules, score, ytd, price];
   if (tab === "now") return [...base, rules, score, buzz, ins, ytd];
   return [...base, rules, score, ytd, price];
 }
@@ -244,8 +286,9 @@ function rows() {
   if (tab === "jan") list = list.filter(r => r.jan.pass);
   if (tab === "now") list = list.filter(r => r.now.pass);
   if (tab === "all" && $("#only").checked) list = list.filter(r => r.now.pass);
+  if (tab === "win") { const top = new Set(byYtd().slice(0, WIN_TABLE)); list = list.filter(r => top.has(r)); }
   const cols = columns();
-  const key = sortKey && cols.find(c => c.k === sortKey) ? sortKey : (tab === "jan" ? "ytd" : tab === "now" ? "score" : "sym");
+  const key = sortKey && cols.find(c => c.k === sortKey) ? sortKey : (tab === "jan" || tab === "win" ? "ytd" : tab === "now" ? "score" : "sym");
   const col = cols.find(c => c.k === key);
   const dir = sortKey ? sortDir : (key === "sym" ? 1 : -1);
   list.sort((a, b) => {
@@ -262,10 +305,11 @@ function render() {
     `<th class="${c.num ? "num" : ""}" scope="col"><button data-k="${c.k}" ${c.k === key ? `data-dir="${dir > 0 ? "↑" : "↓"}"` : ""}>${c.t}</button></th>`).join("") + "</tr>";
   $("#tbl tbody").innerHTML = list.length ? list.map(r =>
     `<tr tabindex="0" data-sym="${esc(r.sym)}">` + cols.map(c => `<td class="${c.num ? "num" : ""}">${c.html(r)}</td>`).join("") + "</tr>").join("")
-    : `<tr><td class="empty" colspan="${cols.length}">${tab === "all" ? "No stock matches the search or sector." : "No stock passes all six rules for this filter. Try All sectors or clear the search."}</td></tr>`;
+    : `<tr><td class="empty" colspan="${cols.length}">${tab === "jan" || tab === "now" ? "No stock passes all six rules for this filter. Try All sectors or clear the search." : "No stock matches the search or sector."}</td></tr>`;
   $("#count").textContent = `${list.length} stock${list.length === 1 ? "" : "s"}`;
   $("#tabnote").textContent = NOTES[tab];
   $("#onlyWrap").hidden = tab !== "all";
+  $("#hits").hidden = tab !== "win";
 }
 
 /* Drawer with chart */
@@ -362,7 +406,7 @@ async function init() {
   }
   $("#stamp").textContent = `Prices through ${DATA.stocks.find(r => r.price_date)?.price_date || DATA.today}`;
   [...new Set(DATA.stocks.map(r => r.sector))].sort().forEach(s => $("#sector").insertAdjacentHTML("beforeend", `<option>${esc(s)}</option>`));
-  race(); footer(); render();
+  race(); hits(); footer(); render();
 }
 
 document.querySelector("nav.tabs").addEventListener("click", e => {
